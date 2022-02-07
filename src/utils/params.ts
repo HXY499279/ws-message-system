@@ -7,7 +7,6 @@
 */
 export interface connectSocket {
   groupName: string;
-  adminId: string | number;
   callBack?: () => void;
 }
 

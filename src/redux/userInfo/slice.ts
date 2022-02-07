@@ -31,8 +31,6 @@ export const userInfoSlice = createSlice({
   reducers: {
     updateMyGroup: (state, action) => {
       state.group = action.payload;
-      console.log(state.group);
-      
     },
   },
   extraReducers: {

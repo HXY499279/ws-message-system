@@ -25,7 +25,7 @@ class HttpUtil {
   // websocket连接模块
   connectSocket = (params:connectSocket) =>
     new SocketConnect(params.groupName,
-      `groupName=${params.groupName}&adminId=${params.adminId}`, params.callBack
+      `groupName=${params.groupName}`, params.callBack
     );
 
   // session-controller模块

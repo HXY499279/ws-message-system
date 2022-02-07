@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Layout, Input, Table, Modal, Button, message, Popconfirm } from "antd";
 import {
   PlusOutlined,
@@ -8,10 +8,7 @@ import {
 import GroupCreateForm from "./components/GroupCreateForm";
 import httpUtil from "../../../../../utils/httpUtil";
 import { joinGroup } from "../../../../../utils/params";
-import {
-  getUserInfoAC,
-  getGroupListAC,
-} from "../../../../../redux/actionCreators";
+import { getGroupListAC } from "../../../../../redux/actionCreators";
 import { useSelector, useDispatch } from "../../../../../redux/hooks";
 import SocketConnect from "../../../../../utils/websocket";
 import "./clear_ant_css.css";
@@ -44,18 +41,23 @@ export default function Hall() {
   const dispatch = useDispatch();
 
   // 已有分组加入其他分组
-  const switchGroup = (groupName: string) => {
-    confirm({
-      title: "已有分组",
-      icon: <ExclamationCircleOutlined />,
-      content: `要加入该组必须先退出${group.groupName}组, 确定退出吗?`,
-      onOk() {
-        return httpUtil.quitGroup({ userId: user.userId }).then((res) => {
-          joinGroup(groupName);
-        });
-      },
-      onCancel() {},
-    });
+  const switchGroup = (item: any) => {
+    if (group.groupName !== item.groupName) {
+      confirm({
+        title: "已有分组",
+        icon: <ExclamationCircleOutlined />,
+        content: `要加入该组必须先退出${group.groupName}组, 确定退出吗?`,
+        onOk() {
+          return httpUtil.quitGroup({ userId: user.userId }).then((res) => {
+            SocketConnect.socketConnects.get(group.groupName).closeMyself();
+            joinGroup(item);
+          });
+        },
+        onCancel() {},
+      });
+    } else {
+      message.warn("已经加入该分组");
+    }
   };
 
   // 加入分组操作
@@ -63,9 +65,8 @@ export default function Hall() {
     const { groupId, groupName } = item;
     const { userId } = user;
     const data: joinGroup = { groupId, userId };
-    return httpUtil.connectSocket({
+    httpUtil.connectSocket({
       groupName: groupName,
-      adminId: admin.adminId,
       callBack: () => {
         httpUtil.joinGroup(data).then((res) => {
           const { status, message: msg } = res;
@@ -78,7 +79,8 @@ export default function Hall() {
       },
     });
   };
-  
+
+  // 页面上点击加入分组
   const handleJoinGroup = (item: any) => {
     if (group) {
       switchGroup(item);
@@ -156,6 +158,7 @@ export default function Hall() {
     setSearchList(result);
   };
 
+  // 清楚搜索框内容时
   const clearSearch = (e: any) => {
     const value = e.target.value;
     if (value === "") {
@@ -197,14 +200,14 @@ export default function Hall() {
     getGroupList();
     // 连接websocket
     if (admin) {
-      const socketConnect = httpUtil.connectSocket({
+      httpUtil.connectSocket({
         groupName: "NoGroup",
-        adminId: admin.adminId,
       });
-      return () => {
-        // 关闭websocket连接
-        socketConnect.closeMyself();
-      };
+    }
+    if (group) {
+      httpUtil.connectSocket({
+        groupName: group.groupName,
+      });
     }
   }, [admin]);
 
