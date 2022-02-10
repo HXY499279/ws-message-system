@@ -63,7 +63,7 @@ export interface updateGroup {
   maxCount: number;
 }
 
-export interface getListMembers {
+export interface getMemberList {
   groupId: string;
 }
 

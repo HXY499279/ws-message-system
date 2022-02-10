@@ -7,7 +7,6 @@ import { Tabs } from "antd";
 const { TabPane } = Tabs;
 
 function callback(key: any) {
-  console.log(key);
 }
 
 export function Login() {

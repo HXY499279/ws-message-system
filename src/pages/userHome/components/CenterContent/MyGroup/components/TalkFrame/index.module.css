@@ -1,0 +1,28 @@
+.wrapper {
+  height: calc(50% - 10px);
+  padding: 10px 15px 0;
+  background-color: rgb(246, 247, 249);
+  overflow-y: auto;
+  border-radius: 10px !important;
+  box-shadow: 0 8px 12px rgb(0 33 79 / 11%) !important;
+  position: relative;
+}
+.content{
+  width: 100%;
+  min-height: 229.5px !important;
+  height: calc(50vh - 153px) !important;
+  border-bottom: 1px dotted rgb(190, 190, 190);
+}
+.send-input {
+  position: absolute;
+  width: 255px;
+  left: 50%;
+  bottom: 15px;
+  transform: translateX(-50%);
+}
+.send-input input {
+  border-radius: 10px;
+}
+.send-input button {
+  border-radius: 10px !important;
+}

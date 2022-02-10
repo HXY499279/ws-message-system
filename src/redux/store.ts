@@ -4,11 +4,12 @@ import {
   Action,
   combineReducers,
 } from "@reduxjs/toolkit";
-import { userInfoSlice, groupListSlice } from "./reducers";
+import { userInfoSlice, groupListSlice, memberListSlice } from "./reducers";
 
 const rootReducer = combineReducers({
   userInfo: userInfoSlice.reducer,
   groupList: groupListSlice.reducer,
+  memberList: memberListSlice.reducer,
 });
 
 export const store = configureStore({

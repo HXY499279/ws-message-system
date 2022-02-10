@@ -16,16 +16,18 @@ import {
   joinGroup,
   removeGroup,
   updateGroup,
-  getListMembers,
+  getMemberList,
   quitGroup,
 } from "./params";
 import SocketConnect from "./websocket";
 
 class HttpUtil {
   // websocket连接模块
-  connectSocket = (params:connectSocket) =>
-    new SocketConnect(params.groupName,
-      `groupName=${params.groupName}`, params.callBack
+  connectSocket = (params: connectSocket) =>
+    new SocketConnect(
+      params.groupName,
+      `groupName=${params.groupName}`,
+      params.callBack
     );
 
   // session-controller模块
@@ -55,7 +57,7 @@ class HttpUtil {
   getGroupList = () => httpReq("get", "/group/list");
   updateGroup = (params: updateGroup) =>
     httpReq("put", "/group/update", params);
-  getListMembers = (params: getListMembers) =>
+  getMemberList = (params: getMemberList) =>
     httpReq("get", `/group/listMembers/${params.groupId}`);
   quitGroup = (params: quitGroup) =>
     httpReq("delete", `/group/quit/${params.userId}`);

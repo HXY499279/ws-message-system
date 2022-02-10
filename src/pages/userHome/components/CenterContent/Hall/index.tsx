@@ -12,9 +12,9 @@ import { getGroupListAC } from "../../../../../redux/actionCreators";
 import { useSelector, useDispatch } from "../../../../../redux/hooks";
 import SocketConnect from "../../../../../utils/websocket";
 import "./clear_ant_css.css";
+import { useHistory } from "react-router-dom";
 
 const { Search } = Input;
-const { Content } = Layout;
 const { confirm } = Modal;
 
 // 表单获取的数据类型
@@ -37,26 +37,32 @@ export default function Hall() {
   const group = useSelector((state) => state.userInfo.group);
   const admin = useSelector((state) => state.userInfo.admin);
 
+  // 获取history
+  const history = useHistory();
+
   // 获取dispatch
   const dispatch = useDispatch();
 
-  // 已有分组加入其他分组
+  // 已有分组切换到其他分组
   const switchGroup = (item: any) => {
-    if (group.groupName !== item.groupName) {
+    if (group.groupId === item.groupId) {
+      message.warn("已在该组内");
+    } else if (user.userId === group.creatorId) {
+      message.warn("创建了分组后, 不能加入其他分组");
+    } else if (group.groupId !== item.groupId) {
       confirm({
         title: "已有分组",
         icon: <ExclamationCircleOutlined />,
         content: `要加入该组必须先退出${group.groupName}组, 确定退出吗?`,
         onOk() {
           return httpUtil.quitGroup({ userId: user.userId }).then((res) => {
+            // 加入新分组前先断开旧分组连接
             SocketConnect.socketConnects.get(group.groupName).closeMyself();
             joinGroup(item);
           });
         },
         onCancel() {},
       });
-    } else {
-      message.warn("已经加入该分组");
     }
   };
 
@@ -65,6 +71,7 @@ export default function Hall() {
     const { groupId, groupName } = item;
     const { userId } = user;
     const data: joinGroup = { groupId, userId };
+    
     httpUtil.connectSocket({
       groupName: groupName,
       callBack: () => {
@@ -74,6 +81,7 @@ export default function Hall() {
             message.warn(msg);
           } else if (status === 0) {
             message.success(msg);
+            history.push("/user/mygroup");
           }
         });
       },
@@ -172,6 +180,11 @@ export default function Hall() {
 
   // 提交create group表单
   const onFinish = (values: GroupCreateFormType) => {
+    if (group) {
+      return message.warn(
+        `您已加入分组${group.groupName}, 若要创建分组, 请先退出分组`
+      );
+    }
     const limitCount = 50;
     const { groupName, maxCount } = values;
     if (isNaN(maxCount * 1) || maxCount * 1 < 0 || maxCount * 1 > limitCount) {
@@ -189,6 +202,7 @@ export default function Hall() {
         message.warn(msg);
       } else if (status === 0) {
         message.success(msg);
+        history.push("/user/mygroup");
         // 关闭创建分组弹窗
         handleCancel();
       }
@@ -212,17 +226,10 @@ export default function Hall() {
   }, [admin]);
 
   return (
-    <Content
-      className="site-layout-background"
-      style={{
-        margin: "24px 16px",
-        padding: 24,
-        minHeight: 280,
-      }}
-    >
+    <>
       <Button
         onClick={() => {
-          httpUtil.getListMembers({ groupId: group.groupId }).then((res) => {
+          httpUtil.getMemberList({ groupId: group.groupId }).then((res) => {
             console.log(res);
           });
         }}
@@ -266,6 +273,6 @@ export default function Hall() {
       >
         <GroupCreateForm onFinish={onFinish} />
       </Modal>
-    </Content>
+    </>
   );
 }

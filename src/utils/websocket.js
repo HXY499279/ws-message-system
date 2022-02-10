@@ -37,7 +37,7 @@ export default class SocketConnect {
         SocketConnect.socketConnects.set(this.name, this)
         this.ws.onopen = e => {
             // 连接ws成功回调
-            // console.log(SocketConnect.socketConnects);
+            console.log(SocketConnect.socketConnects);
             this.status = 'open';
             console.log(`${this.name}连接成功`)
             // 连接成功执行回调函数
@@ -53,6 +53,7 @@ export default class SocketConnect {
             if (type === 1) {
                 // type为1有新分组被创建，更新分组列表
                 store.dispatch(updateGroupListAC(data))
+                store.dispatch(updateMyGroupAC(data))
             }
             // 加入分组
             if (type === 3) {

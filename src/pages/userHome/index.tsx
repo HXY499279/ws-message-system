@@ -15,15 +15,16 @@ export function UserHome() {
   const user = useSelector((state) => state.userInfo.user);
 
   const dispatch = useDispatch();
-
+  
+  const toggle = () => {
+    setCollapsed(!collapsed);
+  };
+  
   useEffect(() => {
     // 获取个人信息
     dispatch(getUserInfoAC());
   }, []);
 
-  const toggle = () => {
-    setCollapsed(!collapsed);
-  };
 
   return (
     <>
