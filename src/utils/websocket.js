@@ -1,15 +1,19 @@
-import { updateGroupListAC, updateMyGroupAC } from "../redux/actionCreators";
+import { updateGroupListAC, updateMyGroupAC, addMemberListAC, deleteMemberListAC } from "../redux/actionCreators";
 import { store } from "../redux/store";
 
 
 export default class SocketConnect {
     // 在SocketConnect类上存储自己的实例
     static socketConnects = new Map()
+    // 获取实例
+    static getConnectInstance(name) {
+        return SocketConnect.socketConnects.get(name)
+    }
 
-    constructor(name, urlKey, callBack) {
+    constructor(name, urlKey, scene, callBack = () => { }) {
         const adminId = store.getState().userInfo.admin.adminId
         // ws://localhost:8888/websocket?groupName=Xxx&adminId=X
-        this.url = `ws://47.108.139.22:8888/websocket?${urlKey}&adminId=${adminId}`;
+        this.url = `ws://47.108.139.22:8888/websocket?${urlKey}&adminId=${adminId}&scene=${scene}`;
         this.ws = null;  // websocket对象
         this.status = null; // websocket状态
         this.name = name // websocket名字
@@ -22,7 +26,14 @@ export default class SocketConnect {
             if (!this.ws) {
                 // 如果已有groupName相同的实例，就无需创建
                 if (!SocketConnect.socketConnects.has(this.name)) {
+                    // 没有，创建
                     this.connect();
+                } else {
+                    // 有，返回
+                    const that = SocketConnect.socketConnects.get(this.name)
+                    this.ws = that.ws
+                    this.status = that.status
+                    this.callBack()
                 }
             }
             return
@@ -57,8 +68,19 @@ export default class SocketConnect {
             }
             // 加入分组
             if (type === 3) {
-                store.dispatch(updateMyGroupAC(data))
+                store.dispatch(addMemberListAC(data))
             }
+
+            // 退出分组
+            if (type === 4) {
+                store.dispatch(deleteMemberListAC(data))
+            }
+
+            // 白板,聊天
+            if (type === 10 || type === 9) {
+                this.callBack(e)
+            }
+
         }
         // ws关闭回调
         this.ws.onclose = e => {
@@ -89,5 +111,5 @@ export default class SocketConnect {
             console.log(`${this.name}手动关闭`)
         }
     }
-}
 
+}

@@ -4,6 +4,7 @@ import { getMemberListAC } from "../../../../../../../redux/actionCreators";
 import { Avatar, Space, Input, Popconfirm } from "antd";
 import { MemberList } from "./components/MemberList";
 import { DeleteOutlined, UserOutlined } from "@ant-design/icons";
+import { nanoid } from "nanoid";
 import styles from "./index.module.css";
 
 const { Search } = Input;
@@ -43,8 +44,8 @@ export const MemberFrame = () => {
     }
   };
 
-  const confirm = (e: any) => {
-    console.log(e);
+  const confirm = (userId: string) => {
+    console.log(userId);
   };
 
   const cancel = (e: any) => {
@@ -58,7 +59,7 @@ export const MemberFrame = () => {
         return (
           <Popconfirm
             title="确定踢出该成员吗?"
-            onConfirm={confirm}
+            onConfirm={confirm.bind(this, props.item.userId)}
             onCancel={cancel}
             okText="确认"
             cancelText="取消"
@@ -109,7 +110,7 @@ export const MemberFrame = () => {
         loading={loading}
         dataSource={searchList ? searchList : members}
         renderItem={(item: any) => (
-          <div className={styles["user"]}>
+          <div className={styles["user"]} key={nanoid()}>
             <Space>
               <Avatar
                 style={{

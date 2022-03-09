@@ -1,7 +1,7 @@
 .layout {
   height: 721px !important;
   min-height: 100vh !important;
-  min-width: 1300px !important;
+  min-width: 1520px !important;
 }
 .sider {
   background: rgb(246, 247, 249) !important;
@@ -25,8 +25,6 @@
   );
 }
 .side-menu-wraper {
-  height: 100%;
-  box-shadow: 0 10px 10px 0 rgb(0 33 79 / 11%);
 }
 .trigger {
   position: absolute;

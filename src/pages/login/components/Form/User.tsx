@@ -23,7 +23,7 @@ export const User: React.FC = () => {
     httpUtil.userLogin(values).then(
       (res) => {
         setLoading(false);
-        message.success(`尊敬的用户${values.userName}，欢迎您`);
+        message.success(`尊敬的用户${values.loginName}，欢迎您`);
         // 获取个人信息
         dispatch(getUserInfoAC());
         setTimeout(() => {
@@ -60,7 +60,7 @@ export const User: React.FC = () => {
       onFinish={onFinish}
     >
       <Form.Item
-        name="userName"
+        name="loginName"
         rules={[
           {
             required: true,

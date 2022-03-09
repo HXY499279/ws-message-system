@@ -22,7 +22,6 @@ export function SideMenu() {
   const logOut = () => {
     httpUtil.logout();
   };
-  console.log(group);
 
   const showConfirm = () => {
     confirm({

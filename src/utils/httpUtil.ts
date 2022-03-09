@@ -14,6 +14,7 @@ import {
   recoverUsers,
   createGroup,
   joinGroup,
+  getGroupList,
   removeGroup,
   updateGroup,
   getMemberList,
@@ -27,6 +28,7 @@ class HttpUtil {
     new SocketConnect(
       params.groupName,
       `groupName=${params.groupName}`,
+      params.scene,
       params.callBack
     );
 
@@ -54,7 +56,8 @@ class HttpUtil {
   removeGroup = (params: removeGroup) =>
     httpReq("delete", `/group/remove${params}`);
   joinGroup = (params: joinGroup) => httpReq("post", "/group/join", params);
-  getGroupList = () => httpReq("get", "/group/list");
+  getGroupList = (params: getGroupList) =>
+    httpReq("get", `/group/list/${params.adminId}`);
   updateGroup = (params: updateGroup) =>
     httpReq("put", "/group/update", params);
   getMemberList = (params: getMemberList) =>

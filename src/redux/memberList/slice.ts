@@ -33,7 +33,14 @@ export const memberListSlice = createSlice({
   name: "memberList",
   initialState,
   reducers: {
-    updateMemberList(state, action) {},
+    addMemberList(state, action) {
+      state.members.push(action.payload);
+    },
+    deleteMemberList(state, action) {
+      state.members = state.members.filter((member: any) => {
+        return member.userId != action.payload.userId;
+      });
+    },
   },
   extraReducers: {
     [getMemberListAC.pending.type]: (state) => {
@@ -57,4 +64,5 @@ export const memberListSlice = createSlice({
   },
 });
 
-export const updateMemberListAC = memberListSlice.actions.updateMemberList;
+export const addMemberListAC = memberListSlice.actions.addMemberList;
+export const deleteMemberListAC = memberListSlice.actions.deleteMemberList;

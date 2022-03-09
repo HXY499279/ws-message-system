@@ -8,11 +8,19 @@ import {
 import GroupCreateForm from "./components/GroupCreateForm";
 import httpUtil from "../../../../../utils/httpUtil";
 import { joinGroup } from "../../../../../utils/params";
-import { getGroupListAC } from "../../../../../redux/actionCreators";
+import {
+  getGroupListAC,
+  getUserInfoAC,
+} from "../../../../../redux/actionCreators";
 import { useSelector, useDispatch } from "../../../../../redux/hooks";
 import SocketConnect from "../../../../../utils/websocket";
 import "./clear_ant_css.css";
 import { useHistory } from "react-router-dom";
+import {
+  NOGROUP,
+  GROUPHALLLIST,
+  PRIVATEGROUPMESSAGE,
+} from "../../../../../utils/constant";
 
 const { Search } = Input;
 const { confirm } = Modal;
@@ -71,9 +79,10 @@ export default function Hall() {
     const { groupId, groupName } = item;
     const { userId } = user;
     const data: joinGroup = { groupId, userId };
-    
+
     httpUtil.connectSocket({
       groupName: groupName,
+      scene: PRIVATEGROUPMESSAGE,
       callBack: () => {
         httpUtil.joinGroup(data).then((res) => {
           const { status, message: msg } = res;
@@ -95,6 +104,7 @@ export default function Hall() {
     } else {
       joinGroup(item);
     }
+    dispatch(getUserInfoAC());
   };
 
   const columns = [
@@ -175,7 +185,7 @@ export default function Hall() {
   };
 
   const getGroupList = () => {
-    dispatch(getGroupListAC());
+    admin && dispatch(getGroupListAC(admin.adminId));
   };
 
   // 提交create group表单
@@ -215,37 +225,20 @@ export default function Hall() {
     // 连接websocket
     if (admin) {
       httpUtil.connectSocket({
-        groupName: "NoGroup",
+        groupName: NOGROUP,
+        scene: GROUPHALLLIST,
       });
     }
     if (group) {
       httpUtil.connectSocket({
         groupName: group.groupName,
+        scene: PRIVATEGROUPMESSAGE,
       });
     }
   }, [admin]);
 
   return (
     <>
-      <Button
-        onClick={() => {
-          httpUtil.getMemberList({ groupId: group.groupId }).then((res) => {
-            console.log(res);
-          });
-        }}
-      >
-        获取小组成员
-      </Button>
-      <Button
-        onClick={() => {
-          httpUtil.quitGroup({ userId: user.userId }).then((res) => {
-            console.log(res);
-          });
-        }}
-      >
-        退出分组
-      </Button>
-      <br />
       <Search placeholder="搜索分组" onSearch={search} onChange={clearSearch} />
       <Button
         className="create-group-btn"

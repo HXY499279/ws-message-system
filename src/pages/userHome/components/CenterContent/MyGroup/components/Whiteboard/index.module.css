@@ -1,5 +1,43 @@
-.wrapper{
+.wraper {
   height: 100%;
+}
+
+.tools {
+  display: flex;
+  align-items: center;
+  width: 930px;
+  height: 60px;
+  margin-bottom: 14px;
+  border-radius: 10px !important;
+  box-shadow: 0 8px 12px rgb(0 33 79 / 11%) !important;
+  background-color: white;
+}
+
+.tools-item {
+  display: flex;
+  flex-direction: column;
+  margin: 0 20px;
+  font-size: 22px;
+}
+
+.tools-item:first-child {
+  margin: 0;
+  padding: 0 8px 0 12px;
+  border-right: 1px solid silver;
+}
+
+.tools-item-tool{
+  cursor: pointer;
+  align-self: end;
+}
+
+.tools-item-name{
+  margin-bottom: 5px;
+  font-size: 12px;
+  color: rgb(94, 94, 94);
+}
+
+.canvas {
   margin-right: 20px;
   border-radius: 10px !important;
   box-shadow: 0 8px 12px rgb(0 33 79 / 11%) !important;

@@ -7,7 +7,8 @@
 */
 export interface connectSocket {
   groupName: string;
-  callBack?: () => void;
+  scene: string;
+  callBack?: (...any: any[]) => void;
 }
 
 /* 
@@ -16,7 +17,7 @@ export interface connectSocket {
 export interface userLogin {
   password: string;
   serverCode: string;
-  userName: string;
+  loginName: string;
 }
 
 /* 
@@ -51,6 +52,10 @@ export interface createGroup {
 export interface joinGroup {
   groupId: string;
   userId: string;
+}
+
+export interface getGroupList {
+  adminId: string;
 }
 
 export type removeGroup = number;

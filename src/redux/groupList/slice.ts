@@ -18,8 +18,8 @@ const initialState: GroupListAndLoading = {
 // 同步的actionCreator会被createSlice自动创建，异步的actionCreator需要手动创建
 export const getGroupListAC = createAsyncThunk(
   "groupList/getGroupListAC",
-  async () => {
-    const { data, message } = await httpUtil.getGroupList();
+  async (adminId: string) => {
+    const { data, message } = await httpUtil.getGroupList({ adminId });
     return { data, message };
   }
 );

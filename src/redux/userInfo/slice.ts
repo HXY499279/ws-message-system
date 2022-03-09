@@ -49,4 +49,4 @@ export const userInfoSlice = createSlice({
   },
 });
 
-export const updateMyGroupAC = userInfoSlice.actions.updateMyGroup
+export const updateMyGroupAC = userInfoSlice.actions.updateMyGroup;
