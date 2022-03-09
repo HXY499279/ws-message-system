@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "../../../../../../../redux/hooks";
-import { getMemberListAC } from "../../../../../../../redux/actionCreators";
+import {
+  getMemberListAC,
+  getUserInfoAC,
+} from "../../../../../../../redux/actionCreators";
 import { Avatar, Space, Input, Popconfirm } from "antd";
 import { MemberList } from "./components/MemberList";
 import { DeleteOutlined, UserOutlined } from "@ant-design/icons";
 import { nanoid } from "nanoid";
 import styles from "./index.module.css";
+import httpUtil from "../../../../../../../utils/httpUtil";
+import SocketConnect from "../../../../../../../utils/websocket";
 
 const { Search } = Input;
 
@@ -45,7 +50,10 @@ export const MemberFrame = () => {
   };
 
   const confirm = (userId: string) => {
-    console.log(userId);
+    httpUtil.kickUser({ userId }).then((res) => {
+      console.log(res);
+      const ws = SocketConnect.getConnectInstance(group.groupName);
+    });
   };
 
   const cancel = (e: any) => {

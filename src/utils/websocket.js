@@ -1,5 +1,7 @@
-import { updateGroupListAC, updateMyGroupAC, addMemberListAC, deleteMemberListAC } from "../redux/actionCreators";
+import { updateGroupListAC, updateMyGroupAC, addMemberListAC, deleteMemberListAC, getMemberListAC } from "../redux/actionCreators";
+import { message as Message } from "antd";
 import { store } from "../redux/store";
+import httpUtil from "./httpUtil";
 
 
 export default class SocketConnect {
@@ -11,7 +13,7 @@ export default class SocketConnect {
     }
 
     constructor(name, urlKey, scene, callBack = () => { }) {
-        const adminId = store.getState().userInfo.admin.adminId
+        const { admin: { adminId } } = store.getState().userInfo
         // ws://localhost:8888/websocket?groupName=Xxx&adminId=X
         this.url = `ws://47.108.139.22:8888/websocket?${urlKey}&adminId=${adminId}&scene=${scene}`;
         this.ws = null;  // websocket对象
@@ -68,12 +70,36 @@ export default class SocketConnect {
             }
             // 加入分组
             if (type === 3) {
-                store.dispatch(addMemberListAC(data))
+                const { groupId } = data
+                const { user: { userId } } = store.getState().userInfo
+                if (data.userId === userId) {
+                    store.dispatch(getMemberListAC(groupId))
+                } else {
+                    store.dispatch(addMemberListAC(data))
+                }
             }
 
             // 退出分组
             if (type === 4) {
                 store.dispatch(deleteMemberListAC(data))
+            }
+
+            // 有人被踢出分组
+            if (type === 5) {
+                // 从分组列表中删除该成员
+                store.dispatch(deleteMemberListAC({ userId: data }))
+                const { user: { userId } } = store.getState().userInfo
+                if (userId === data) {
+                    httpUtil.deleteMyGroup()
+                        .then(res => {
+                            Message.error("您被踢出房间")
+                            setTimeout(() => {
+                                window.location.replace("/user/hall")
+                                // 更新本地缓存（修改自己的group信息）
+                                store.dispatch(updateMyGroupAC(res.data.group))
+                            }, 100)
+                        })
+                }
             }
 
             // 白板,聊天

@@ -54,6 +54,10 @@ export interface joinGroup {
   userId: string;
 }
 
+export interface kickUser {
+  userId: string;
+}
+
 export interface getGroupList {
   adminId: string;
 }

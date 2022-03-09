@@ -14,6 +14,7 @@ import {
   recoverUsers,
   createGroup,
   joinGroup,
+  kickUser,
   getGroupList,
   removeGroup,
   updateGroup,
@@ -38,6 +39,7 @@ class HttpUtil {
   logout = () => httpReq("delete", "/session/logout");
   userLogin = (params: userLogin) =>
     httpReq("post", "/session/userLogin", params);
+  deleteMyGroup = () => httpReq("delete", "/session/group");
 
   // user-controller模块
   register = (params: register) => httpReq("post", "/user/register", params);
@@ -54,8 +56,10 @@ class HttpUtil {
   createGroup = (params: createGroup) =>
     httpReq("post", "/group/create", params);
   removeGroup = (params: removeGroup) =>
-    httpReq("delete", `/group/remove${params}`);
+    httpReq("delete", `/group/remove/${params}`);
   joinGroup = (params: joinGroup) => httpReq("post", "/group/join", params);
+  kickUser = (params: kickUser) =>
+    httpReq("delete", `/group/kick/${params.userId}`);
   getGroupList = (params: getGroupList) =>
     httpReq("get", `/group/list/${params.adminId}`);
   updateGroup = (params: updateGroup) =>
