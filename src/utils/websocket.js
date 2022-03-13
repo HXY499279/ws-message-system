@@ -1,8 +1,7 @@
-import { updateGroupListAC, updateMyGroupAC, addMemberListAC, deleteMemberListAC, getMemberListAC } from "../redux/actionCreators";
+import { addGroupListAC, deleteGroupListAC, updateMyGroupAC, addMemberListAC, deleteMemberListAC, getMemberListAC } from "../redux/actionCreators";
 import { message as Message } from "antd";
 import { store } from "../redux/store";
 import httpUtil from "./httpUtil";
-
 
 export default class SocketConnect {
     // 在SocketConnect类上存储自己的实例
@@ -61,18 +60,22 @@ export default class SocketConnect {
         // 监听服务器端返回的信息
         this.ws.onmessage = e => {
             const { type, data, message } = JSON.parse(e.data)
-            console.log(this.name, type, data, message)
+            const { user } = store.getState().userInfo
+            const { group } = store.getState().userInfo
+
+            // console.log(this.name, type, data, message)
             // 创建分组
             if (type === 1) {
                 // type为1有新分组被创建，更新分组列表
-                store.dispatch(updateGroupListAC(data))
-                store.dispatch(updateMyGroupAC(data))
+                store.dispatch(addGroupListAC(data))
+                if (data.creatorId === user.userId) {
+                    store.dispatch(updateMyGroupAC(data))
+                }
             }
             // 加入分组
             if (type === 3) {
                 const { groupId } = data
-                const { user: { userId } } = store.getState().userInfo
-                if (data.userId === userId) {
+                if (data.userId === user.userId) {
                     store.dispatch(getMemberListAC(groupId))
                 } else {
                     store.dispatch(addMemberListAC(data))
@@ -82,14 +85,17 @@ export default class SocketConnect {
             // 退出分组
             if (type === 4) {
                 store.dispatch(deleteMemberListAC(data))
+                if (user?.userId == data.userId) {
+                    window.location.replace("/user/hall")
+                    store.dispatch(updateMyGroupAC(null));
+                }
             }
 
             // 有人被踢出分组
             if (type === 5) {
                 // 从分组列表中删除该成员
                 store.dispatch(deleteMemberListAC({ userId: data }))
-                const { user: { userId } } = store.getState().userInfo
-                if (userId === data) {
+                if (user.userId === data) {
                     httpUtil.deleteMyGroup()
                         .then(res => {
                             Message.error("您被踢出房间")
@@ -102,8 +108,28 @@ export default class SocketConnect {
                 }
             }
 
+            // 解散分组
+            if (type === 6) {
+                // 自己不是房主，并且自己是该祖成员时
+                if (group?.groupId === data.groupId) {
+                    httpUtil.deleteMyGroup()
+                        .then(res => {
+                            // 给房间成员提示房间解散
+                            user.userId !== data.creatorId && Message.error("房间已被解散")
+                            setTimeout(() => {
+                                window.location.replace("/user/hall")
+                                // 更新本地缓存（修改自己的group信息）
+                                store.dispatch(updateMyGroupAC(res.data.group))
+                            }, 100)
+                        })
+                } else {
+                    // 有分组被解散，更新分组列表
+                    store.dispatch(deleteGroupListAC(data))
+                }
+            }
+
             // 白板,聊天
-            if (type === 10 || type === 9) {
+            if (type === 10 || type === 11 || type === 9) {
                 this.callBack(e)
             }
 

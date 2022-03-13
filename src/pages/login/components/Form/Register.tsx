@@ -3,11 +3,11 @@ import { Form, Input, Button, message, Select } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { nanoid } from "nanoid";
 import httpUtil from "../../../../utils/httpUtil";
-import { register } from "../../../../utils/params";
+import { registerUser } from "../../../../utils/params";
 
 const { Option } = Select;
 
-interface FinishedData extends register {
+interface FinishedData extends registerUser {
   confirm: string;
 }
 
@@ -18,9 +18,9 @@ export const Register: React.FC = () => {
   const onFinish = (values: FinishedData) => {
     setLoading(true);
     const { userName, password, adminId } = values;
-    const data: register = { userName, password, adminId };
+    const data: registerUser = { userName, password, adminId };
 
-    httpUtil.register(data).then(
+    httpUtil.registerUser(data).then(
       (res) => {
         const { status, message: msg } = res;
         if (status === 1) {

@@ -70,7 +70,7 @@ export const User: React.FC = () => {
       >
         <Input
           prefix={<UserOutlined className="site-form-item-icon" />}
-          placeholder="账号"
+          placeholder="用户账号"
         />
       </Form.Item>
       <Form.Item
@@ -85,7 +85,7 @@ export const User: React.FC = () => {
         <Input.Password
           prefix={<LockOutlined className="site-form-item-icon" />}
           type="password"
-          placeholder="密码"
+          placeholder="用户密码"
         />
       </Form.Item>
 

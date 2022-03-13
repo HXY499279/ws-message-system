@@ -1,0 +1,28 @@
+.ant-menu-inline .ant-menu-selected::after,
+.ant-menu-inline .ant-menu-item-selected::after {
+  transform: scaleY(0);
+}
+.ant-menu:not(.ant-menu-horizontal) .ant-menu-item-selected {
+  background-color: #bae1f3;
+}
+.ant-menu-item {
+  font-weight: 600;
+}
+.ant-menu-item:hover {
+  color: rgb(57, 185, 173) !important;
+}
+.ant-menu-item-selected {
+  color: rgb(57, 185, 173) !important;
+}
+.ant-menu-submenu-selected {
+  color: rgb(57, 185, 173) !important;
+}
+.ant-menu-item:hover a {
+  color: rgb(57, 185, 173) !important;
+}
+.ant-menu-item-selected a {
+  color: rgb(57, 185, 173) !important;
+}
+.ant-layout-sider-children {
+  box-shadow: 0 10px 10px 0 rgb(0 33 79 / 11%);
+}

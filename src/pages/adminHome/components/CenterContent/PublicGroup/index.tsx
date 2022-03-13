@@ -107,21 +107,9 @@ export default function Hall() {
       title: "组名",
       dataIndex: "groupName",
       key: "groupName",
-      render: (text: any, record: any) => {
-        return (
-          <span>
-            {text}
-            {group?.groupId === record.groupId ? (
-              <CrownTwoTone style={{ fontSize: 20, marginLeft: 5 }} />
-            ) : (
-              ""
-            )}
-          </span>
-        );
-      },
     },
     {
-      title: "人数",
+      title: "最大连接",
       dataIndex: "maxCount",
       key: "maxCount",
     },

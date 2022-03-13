@@ -280,9 +280,12 @@ export default function BG() {
         });
         new window.Ribbons();
         return () => {
+            // 组件卸载删除背景组件
+            const bgCanvas = document.getElementById("bgCanvas")
+            bgCanvas.parentNode.removeChild(bgCanvas)
             delete window.Ribbons
         }
-    }, [])
+    })
     return (
         <></>
     )

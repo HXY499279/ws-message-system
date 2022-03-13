@@ -1,0 +1,8 @@
+.sub-menu {
+  font-weight: 600 !important;
+}
+
+.sub-menu :global .ant-menu-submenu-title:hover {
+  color: rgb(57, 185, 173) !important;
+}
+

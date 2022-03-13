@@ -1,5 +1,9 @@
 export { getUserInfoAC, updateMyGroupAC } from "./userInfo/slice";
-export { getGroupListAC, updateGroupListAC } from "./groupList/slice";
+export {
+  getGroupListAC,
+  addGroupListAC,
+  deleteGroupListAC,
+} from "./groupList/slice";
 export {
   getMemberListAC,
   addMemberListAC,

@@ -28,8 +28,13 @@ export const groupListSlice = createSlice({
   name: "groupList",
   initialState,
   reducers: {
-    updateGroupList(state, action) {
+    addGroupList(state, action) {
       state.data.push(action.payload);
+    },
+    deleteGroupList(state, action) {
+      state.data = state.data.filter((member: any) => {
+        return member.groupId != action.payload.groupId;
+      });
     },
   },
   extraReducers: {
@@ -52,4 +57,7 @@ export const groupListSlice = createSlice({
   },
 });
 
-export const updateGroupListAC = groupListSlice.actions.updateGroupList;
+export const {
+  addGroupList: addGroupListAC,
+  deleteGroupList: deleteGroupListAC,
+} = groupListSlice.actions;

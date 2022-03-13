@@ -12,32 +12,16 @@ export interface connectSocket {
 }
 
 /* 
-  session-controller
+  admin-controller
 */
-export interface userLogin {
-  password: string;
-  serverCode: string;
-  loginName: string;
-}
-
-/* 
-  user-controller
-*/
-export interface register {
-  userName: string;
-  password: string;
+export interface deleteAdmin {
   adminId: string;
 }
-export interface updateNameAndPassword {
+
+export interface registerAdmin {
+  adminName: string;
   password: string;
-  userName: string;
-  userId: string;
 }
-export type recoverUsers = string[];
-
-export type logicalDeleteUser = number;
-
-export type completelyDeleteUser = number;
 
 /* 
   group-controller
@@ -47,6 +31,10 @@ export interface createGroup {
   creatorId: number; // 创建者的userId
   adminId: number;
   maxCount: number;
+}
+
+export interface dismissGroup {
+  groupId: string;
 }
 
 export interface joinGroup {
@@ -62,6 +50,24 @@ export interface getGroupList {
   adminId: string;
 }
 
+export interface getMemberList {
+  groupId: string;
+}
+
+export interface getMyPublicGroupList {
+  adminId: string;
+}
+
+export interface adminCreatePublicGroup {
+  adminId: number;
+  groupName: string;
+  maxCount: number;
+}
+
+export interface quitGroup {
+  userId: string;
+}
+
 export type removeGroup = number;
 
 export interface updateGroup {
@@ -72,14 +78,49 @@ export interface updateGroup {
   maxCount: number;
 }
 
-export interface getMemberList {
-  groupId: string;
+/* 
+  session-controller
+*/
+export interface adminLogin {
+  password: string;
+  serverCode: string;
+  loginName: string;
 }
 
-export interface quitGroup {
+export interface userLogin {
+  password: string;
+  serverCode: string;
+  loginName: string;
+}
+
+/* 
+  user-controller
+*/
+export type completelyDeleteUser = {
+  userId: string;
+};
+
+export type getUserList = {
+  adminId: string;
+};
+
+export type logicalDeleteUser = {
+  userId: string;
+};
+
+export type recoverUsers = string[];
+
+export interface registerUser {
+  userName: string;
+  password: string;
+  adminId: string;
+}
+
+export interface updateNameAndPassword {
+  password: string;
+  userName: string;
   userId: string;
 }
-/* 
-  admin-controller
-*/
-export interface getAdminList {}
+
+
+
