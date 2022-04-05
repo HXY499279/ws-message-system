@@ -1,99 +1,96 @@
 import { useEffect, useState } from "react";
 import { Input, Table, Modal, Button, message, Popconfirm } from "antd";
-import GroupCreateForm from "./components/GroupCreateForm";
 import httpUtil from "../../../../../utils/httpUtil";
 import { useSelector, useDispatch } from "../../../../../redux/hooks";
 import styles from "./index.module.css";
 import "./clear_ant_css.css";
-import { adminCreateGroup } from "../../../../../utils/params";
 import {
   GROUP_HALL_LIST,
   NO_GROUP,
   PRIVATE_GROUP_WITHOUT_ADMIN_LIST,
 } from "../../../../../utils/constant";
-import { getWithoutAdminGroupListAC } from "../../../../../redux/actionCreators";
+import { getWithoutAdminUserListAC } from "../../../../../redux/actionCreators";
 
 const { Search } = Input;
 
-// 表单获取的数据类型
-export interface GroupCreateFormType {
-  groupName: string;
-  maxCount: number;
-}
-
-export default function PublicGroup() {
+export default function MyUser() {
   // 列表加载
   const [loading, setLoading] = useState(true);
   // 数据列表（总）
-  const [groupList, setGroupList] = useState<any[]>([]);
+  const [userList, setUserList] = useState<any[]>([]);
   // 搜索列表（搜索结果）
   const [searchList, setSearchList] = useState<any>(null);
-  // 是否创建分组弹出框
-  const [isModalVisible, setIsModalVisible] = useState(false);
   // 获取user,group,admin
   const admin = useSelector((state) => state.userInfo.admin);
 
-  // 获取未指定管理员的分组
-  const withoutAdminGroupList = useSelector(
-    (state) => state.withoutAdminGroupList.data
+  // 获取未指定管理员的用户
+  const withoutAdminUserList = useSelector(
+    (state) => state.withoutAdminUserList.data
   );
-  const withoutAdminGroupListLoading = useSelector(
-    (state) => state.withoutAdminGroupList.loading
+  const withoutAdminUserListLoading = useSelector(
+    (state) => state.withoutAdminUserList.loading
   );
 
   const [isMyManageGroup, setIsMyManageGroup] = useState(true);
 
   const dispatch = useDispatch();
 
-  const giveUpManage = (groupId: string) => {
-    httpUtil.giveUpManagePrivateGroup({ groupId }).then((res) => {
-      getGroupList();
+  const giveUpManage = (userId: string, groupId: string) => {
+    httpUtil.giveUpManageUser({ userId, groupId }).then((res) => {
+      getUserList();
       message.success(res.message);
     });
   };
 
-  const choiceManage = (groupId: string) => {
+  const choiceManage = (userId: string, groupId: string) => {
     setLoading(true);
-    httpUtil.choiceManagePrivateGroup(+groupId).then((res) => {
-      dispatch(getWithoutAdminGroupListAC());
+    httpUtil.choiceUserToManage({ userId, groupId }).then((res) => {
+      dispatch(getWithoutAdminUserListAC(false));
       setLoading(false);
       message.success(res.message);
     });
   };
 
-  const getGroupList = () => {
+  const getUserList = () => {
     setLoading(true);
-    httpUtil.getGroupListWithAdmin({ adminId: admin.adminId }).then((res) => {
-
-      setGroupList(res.data);
+    httpUtil.getUserListWithAdmin({ adminId: admin.adminId }).then((res) => {
+      let result: any[] = [];
+      for (let item of res.data) {
+        if (!item.user.showStatus) result.push({ ...item.user, ...item.group });
+      }
+      console.log(result);
+      
+      setUserList(result);
       setLoading(false);
     });
   };
 
-  const deleteGroup = (groupId: string) => {
-    httpUtil.removeGroup(+groupId).then((res) => {
-      isMyManageGroup ? getGroupList() : dispatch(getWithoutAdminGroupListAC());
+  const deleteGroup = (userId: string) => {
+    httpUtil.logicalDeleteUser({ userId }).then((res) => {
+      isMyManageGroup
+        ? getUserList()
+        : dispatch(getWithoutAdminUserListAC(false));
       message.success(res.message);
     });
   };
 
   const columns = [
     {
-      title: "组名",
+      title: "用户名",
+      dataIndex: "userName",
+      key: "userName",
+    },
+    {
+      title: "密码",
+      dataIndex: "password",
+      key: "password",
+    },
+    {
+      title: "组",
       dataIndex: "groupName",
       key: "groupName",
-    },
-    {
-      title: "最大人数",
-      dataIndex: "maxCount",
-      key: "maxCount",
-    },
-    {
-      title: "创建人",
-      dataIndex: "creatorName",
-      key: "creatorName",
       render: (text: string) => {
-        return text || <span style={{ color: "silver" }}>无</span>;
+        return text || <span style={{ color: "silver" }}>暂无分组</span>;
       },
     },
     {
@@ -106,12 +103,12 @@ export default function PublicGroup() {
           <div className="btn-wraper">
             <Popconfirm
               title={
-                isMyManageGroup ? "确认放弃管理该分组吗?" : "确认管理该分组吗?"
+                isMyManageGroup ? "确认放弃管理该用户吗?" : "确认管理该用户吗?"
               }
               onConfirm={
                 isMyManageGroup
-                  ? giveUpManage.bind(record, record.groupId)
-                  : choiceManage.bind(record, record.groupId)
+                  ? giveUpManage.bind(record, record?.userId, record?.groupId)
+                  : choiceManage.bind(record, record?.userId, record?.groupId)
               }
               okText="确认"
               cancelText="取消"
@@ -135,17 +132,19 @@ export default function PublicGroup() {
                   style={{ marginRight: 20 }}
                   type="primary"
                 >
-                  管理该组
+                  纳入管理
                 </Button>
               )}
             </Popconfirm>
             <Popconfirm
-              title="确认删除该分组吗?"
-              onConfirm={deleteGroup.bind(record, record.groupId)}
+              title="确认删除该用户吗?"
+              onConfirm={deleteGroup.bind(record, record?.userId)}
               okText="确认"
               cancelText="取消"
             >
-              <Button type="primary" danger>删除分组</Button>
+              <Button type="primary" danger>
+                删除用户
+              </Button>
             </Popconfirm>
           </div>
         );
@@ -153,23 +152,15 @@ export default function PublicGroup() {
     },
   ];
 
-  const showModal = () => {
-    setIsModalVisible(true);
-  };
-
-  const handleCancel = () => {
-    setIsModalVisible(false);
-  };
-
   // 搜索
   const search = (value: string) => {
     setSearchList(null);
     const reg = new RegExp(value, "ig");
-    const result = (
-      isMyManageGroup ? groupList : withoutAdminGroupList
-    )?.filter((item: any) => {
-      return item.groupName.search(reg) !== -1;
-    });
+    const result = (isMyManageGroup ? userList : withoutAdminUserList)?.filter(
+      (item: any) => {
+        return item.userName.search(reg) !== -1;
+      }
+    );
     setSearchList(result);
   };
 
@@ -181,47 +172,17 @@ export default function PublicGroup() {
     }
   };
 
-  // 提交create group表单
-  const onFinish = (values: GroupCreateFormType) => {
-    const limitCount = 50;
-    const { groupName, maxCount } = values;
-    if (isNaN(maxCount * 1) || maxCount * 1 < 0 || maxCount * 1 > limitCount) {
-      return message.warn(`请输入0-${limitCount}的数字`);
-    }
-    if (groupName === "NoGroup") {
-      return message.warn("不能以NoGroup为小组名");
-    }
-    const adminId: string = admin.adminId;
-    const data: adminCreateGroup = {
-      ...values,
-      adminId,
-      adminCreated: true,
-      creatorId: null,
-    };
-    httpUtil.adminCreateGroup(data).then((res) => {
-      const { status, message: msg } = res;
-      if (status === 1) {
-        message.warn(msg);
-      } else if (status === 0) {
-        message.success(msg);
-        getGroupList();
-        // 关闭创建分组弹窗
-        handleCancel();
-      }
-    });
-  };
-
   const markMyManageGroup = () => {
     setIsMyManageGroup(true);
-    getGroupList();
+    getUserList();
   };
   const markWithoutAdminGroup = () => {
-    dispatch(getWithoutAdminGroupListAC());
     setIsMyManageGroup(false);
+    dispatch(getWithoutAdminUserListAC(false));
   };
 
   useEffect(() => {
-    // 获取管理员分组列表
+    // 获取管理员用户列表
     if (admin) {
       httpUtil.connectSocket({
         groupName: NO_GROUP,
@@ -231,7 +192,7 @@ export default function PublicGroup() {
         groupName: NO_GROUP,
         scene: GROUP_HALL_LIST,
       });
-      getGroupList();
+      getUserList();
     }
   }, [admin]);
 
@@ -249,7 +210,7 @@ export default function PublicGroup() {
             }
             onClick={markMyManageGroup}
           >
-            我管理的分组
+            我管理的用户
           </span>
           <span
             className={
@@ -263,20 +224,11 @@ export default function PublicGroup() {
             }
             onClick={markWithoutAdminGroup}
           >
-            未指定管理员的分组
+            未指定管理员的用户
           </span>
         </div>
       </div>
-      <Search placeholder="搜索分组" onSearch={search} onChange={clearSearch} />
-      {isMyManageGroup && (
-        <Button
-          className="create-group-btn"
-          style={{ float: "right", marginRight: 20 }}
-          onClick={showModal}
-        >
-          创建分组
-        </Button>
-      )}
+      <Search placeholder="搜索用户" onSearch={search} onChange={clearSearch} />
       <div style={{ height: 20 }} />
       <Table
         columns={columns}
@@ -284,26 +236,18 @@ export default function PublicGroup() {
           searchList
             ? searchList
             : isMyManageGroup
-            ? groupList
-            : withoutAdminGroupList
+            ? userList
+            : withoutAdminUserList
         }
-        loading={isMyManageGroup ? loading : withoutAdminGroupListLoading}
+        loading={isMyManageGroup ? loading : withoutAdminUserListLoading}
         pagination={{
           hideOnSinglePage: true,
           pageSize: 6,
           total: isMyManageGroup
-            ? searchList?.length || groupList?.length || 0
-            : searchList?.length || withoutAdminGroupList?.length || 0,
+            ? searchList?.length || userList?.length || 0
+            : searchList?.length || withoutAdminUserList?.length || 0,
         }}
       />
-      <Modal
-        title="创建分组"
-        visible={isModalVisible}
-        onCancel={handleCancel}
-        footer={null}
-      >
-        <GroupCreateForm onFinish={onFinish} />
-      </Modal>
     </>
   );
 }

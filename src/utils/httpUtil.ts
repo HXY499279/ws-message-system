@@ -12,19 +12,25 @@ import {
   /* 
       admin-controller模块
   */
+  choiceAdmin,
   deleteAdmin,
   registerAdmin,
+  updateAdminNameAndPassword,
   /* 
   group-controller模块
   */
+  adminCreateGroup,
+  choiceManagePrivateGroup,
   createGroup,
   dismissGroup,
+  giveUpManage,
   joinGroup,
   kickUser,
-  getGroupList,
+  getGroupListWithAdmin,
   getMemberList,
   getMyPublicGroupList,
   adminCreatePublicGroup,
+  dismissPublicGroup,
   quitGroup,
   removeGroup,
   updateGroup,
@@ -36,12 +42,15 @@ import {
   /* 
      user-controller模块
   */
+  choiceUserToManage,
   completelyDeleteUser,
-  getUserList,
+  giveUpManageUser,
+  getUserListWithAdmin,
+  getUserListWithoutAdmin,
   logicalDeleteUser,
-  recoverUsers,
+  recoverUser,
   registerUser,
-  updateNameAndPassword,
+  updateUserNameAndPassword,
 } from "./params";
 import SocketConnect from "./websocket";
 
@@ -60,6 +69,9 @@ class HttpUtil {
   /* 
       admin-controller模块
   */
+  // 选择管理员（用户）
+  choiceAdmin = (params: choiceAdmin) =>
+    httpReq("post", `/admin/choice/${params.adminId}`);
   // 注销管理员账号（管理员）
   deleteAdmin = (params: deleteAdmin) =>
     httpReq("delete", `/admin/delete/${params.adminId}`);
@@ -68,35 +80,52 @@ class HttpUtil {
   // 管理员注册（管理员）
   registerAdmin = (params: registerAdmin) =>
     httpReq("post", "/admin/register", params);
+  // 更改管理员的用户名与密码（管理员）
+  updateAdminNameAndPassword = (params: updateAdminNameAndPassword) =>
+    httpReq("put", "/admin/updateNameAndPassword", params);
 
   /* 
       group-controller模块
   */
+  //  创建内部分组（用户）（管理员）
+  adminCreateGroup = (params: adminCreateGroup) =>
+    httpReq("post", "/group/adminCreate", params);
+  // 选择一个私有分组进行管理(管理员)
+  choiceManagePrivateGroup = (params: choiceManagePrivateGroup) =>
+    httpReq("post", `/group/choiceManagePrivateGroup/${params}`);
   //  创建内部分组（用户）（管理员）
   createGroup = (params: createGroup) =>
     httpReq("post", "/group/create", params);
   // 解散分组（用户）
   dismissGroup = (params: dismissGroup) =>
     httpReq("delete", `/group/dismiss/${params.groupId}`);
+  // 管理员放弃管理私有分组(管理员)
+  giveUpManagePrivateGroup = (params: giveUpManage) =>
+    httpReq("delete", `/group/giveUpManage/${params.groupId}`);
   // 加入分组（用户）
   joinGroup = (params: joinGroup) => httpReq("post", "/group/join", params);
   // 踢出分组内的成员（用户）
   kickUser = (params: kickUser) =>
     httpReq("delete", `/group/kick/${params.userId}`);
   // 根据管理员id获取分组列表（用户）（管理员）
-  getGroupList = (params: getGroupList) =>
+  getGroupListWithAdmin = (params: getGroupListWithAdmin) =>
     httpReq("get", `/group/list/${params.adminId}`);
+  // 获取未指定管理员的私有分组列表（管理员）
+  getGroupListWithoutAdmin = () => httpReq("get", `/group/list/withoutAdmin`);
   // 获取指定组的成员列表（用户）（管理员）
   getMemberList = (params: getMemberList) =>
     httpReq("get", `/group/listMembers/${params.groupId}`);
   // 获取外部创建的公共分组列表（管理员）
-  getOtherPublicGroupList = () => httpReq("get", `/group/public`);
+  getOutsidePublicGroupList = () => httpReq("get", `/group/public/outside`);
   // 根据管理员id获取他创建的公共分组列表
   getMyPublicGroupList = (params: getMyPublicGroupList) =>
     httpReq("get", `/group/public/${params.adminId}`);
   //管理员创建公共分组（管理员）
   adminCreatePublicGroup = (params: adminCreatePublicGroup) =>
     httpReq("post", `/group/public/create`, params);
+  // 解散公共分组（管理员）（外部调用）
+  dismissPublicGroup = (params: dismissPublicGroup) =>
+    httpReq("delete", `/group/public/dismiss/${params.groupId}`);
   // 退出分组（用户）
   quitGroup = (params: quitGroup) =>
     httpReq("delete", `/group/quit/${params.userId}`);
@@ -128,23 +157,31 @@ class HttpUtil {
   /* 
       user-controller模块
   */
-  //  彻底删除用户（管理员）
+  // 管理员选择一个未指定管理员的用户进行管理(管理员)
+  choiceUserToManage = (params: choiceUserToManage) =>
+    httpReq("post", "/user/choiceUserToManage", params);
+  // 彻底删除用户（管理员）
   completelyDeleteUser = (params: completelyDeleteUser) =>
-    httpReq("delete", `/user/completelyDeleteUser/${params}`);
+    httpReq("delete", `/user/completelyDeleteUser/${params.userId}`);
+  // 管理员放弃管理用户(管理员)
+  giveUpManageUser = (params: giveUpManageUser) =>
+    httpReq("delete", `/user/giveUpManage/${params.userId}&${params.groupId}`);
   // 根据管理员id展示用户列表（管理员）
-  getUserList = (params: getUserList) =>
-    httpReq("delete", `/user/list/${params.adminId}`);
+  getUserListWithAdmin = (params: getUserListWithAdmin) =>
+    httpReq("get", `/user/list/${params.adminId}`);
+  // 展示未指定管理员的用户列表
+  getUserListWithoutAdmin = () => httpReq("get", `/user/listWithoutAdmin`);
   // 逻辑删除用户（用户）（管理员）
   logicalDeleteUser = (params: logicalDeleteUser) =>
-    httpReq("delete", `/user/logicalDeleteUser/${params}`);
+    httpReq("delete", `/user/logicalDeleteUser/${params.userId}`);
   // 恢复被逻辑删除的用户（管理员）
-  recoverUsers = (params: recoverUsers) =>
-    httpReq("put", "/user/recover", params);
+  recoverUser = (params: recoverUser) =>
+    httpReq("put", `/user/recover/${params.userId}`);
   // 注册新用户（用户）
   registerUser = (params: registerUser) =>
     httpReq("post", "/user/register", params);
   // 更改用户名，密码（用户）
-  updateNameAndPassword = (params: updateNameAndPassword) =>
+  updateUserNameAndPassword = (params: updateUserNameAndPassword) =>
     httpReq("put", "/user/updateNameAndPassword", params);
 }
 

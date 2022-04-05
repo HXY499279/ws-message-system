@@ -114,7 +114,7 @@ export const Register: React.FC = () => {
         rules={[
           {
             required: true,
-            message: "请输入您的账号!",
+            message: "请选择你的管理员",
           },
         ]}
       >

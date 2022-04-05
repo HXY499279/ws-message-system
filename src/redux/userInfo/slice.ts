@@ -10,7 +10,7 @@ interface UserInfo {
 const initialState: UserInfo = {
   user: null,
   group: null,
-  admin: null,
+  admin: undefined,
 };
 
 // 同步的actionCreator会被createSlice自动创建，异步的actionCreator需要手动创建

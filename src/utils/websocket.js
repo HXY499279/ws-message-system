@@ -1,4 +1,16 @@
-import { addGroupListAC, deleteGroupListAC, updateMyGroupAC, addMemberListAC, deleteMemberListAC, getMemberListAC } from "../redux/actionCreators";
+import {
+    addWithAdminGroupListAC,
+    deleteWithAdminGroupListAC,
+    updateMyGroupAC,
+    addMemberListAC,
+    deleteMemberListAC,
+    getMemberListAC,
+    getWithoutAdminGroupListAC,
+    deleteWithoutAdminGroupListAC,
+    addAdminListAC,
+    deleteAdminListAC,
+    changeAdminListAC
+} from "../redux/actionCreators";
 import { message as Message } from "antd";
 import { store } from "../redux/store";
 import httpUtil from "./httpUtil";
@@ -13,11 +25,12 @@ export default class SocketConnect {
 
     constructor(name, urlKey, scene, callBack = () => { }) {
         const { admin: { adminId } } = store.getState().userInfo
-        // ws://localhost:8888/websocket?groupName=Xxx&adminId=X
+        // ws://47.108.139.22:8888/websocket?groupName=Xxx&adminId=X&scene=scene
         this.url = `ws://47.108.139.22:8888/websocket?${urlKey}&adminId=${adminId}&scene=${scene}`;
         this.ws = null;  // websocket对象
         this.status = null; // websocket状态
         this.name = name // websocket名字
+        this.scene = scene // websocket场景
         this.callBack = callBack // 连接websocket后的回调函数
         this.init();
     }
@@ -60,16 +73,23 @@ export default class SocketConnect {
         // 监听服务器端返回的信息
         this.ws.onmessage = e => {
             const { type, data, message } = JSON.parse(e.data)
-            const { user } = store.getState().userInfo
-            const { group } = store.getState().userInfo
+            const { user, group, admin } = store.getState().userInfo
 
-            // console.log(this.name, type, data, message)
+            console.log(this.name, type, data, message)
             // 创建分组
             if (type === 1) {
                 // type为1有新分组被创建，更新分组列表
-                store.dispatch(addGroupListAC(data))
+                store.dispatch(addWithAdminGroupListAC(data))
                 if (data.creatorId === user.userId) {
                     store.dispatch(updateMyGroupAC(data))
+                }
+            }
+            // 管理员删除自己管理的分组
+            if (type === 2) {
+                if (user) {
+                    store.dispatch(deleteWithAdminGroupListAC(data))
+                } else {
+                    store.dispatch(deleteWithoutAdminGroupListAC(data))
                 }
             }
             // 加入分组
@@ -124,7 +144,7 @@ export default class SocketConnect {
                         })
                 } else {
                     // 有分组被解散，更新分组列表
-                    store.dispatch(deleteGroupListAC(data))
+                    store.dispatch(deleteWithAdminGroupListAC(data))
                 }
             }
 
@@ -133,6 +153,34 @@ export default class SocketConnect {
                 this.callBack(e)
             }
 
+            // 管理员放弃私有分组中分组的管理
+            if (type === 12) {
+                if (!user) {
+                    store.dispatch(getWithoutAdminGroupListAC())
+                }else{
+                    store.dispatch(getUserInfoAC())
+                }
+            }
+
+            // 管理员选择未指定管理员的私有分组进行管理
+            if (type === 13) {
+                store.dispatch(deleteWithoutAdminGroupListAC(data))
+            }
+
+            // 新增管理员
+            if (type === 19) {
+                store.dispatch(addAdminListAC(data))
+            }
+
+            // 注销（删除）管理员
+            if (type === 20) {
+                store.dispatch(deleteAdminListAC({ adminId: data }))
+            }
+
+            // 管理员修改密码
+            if (type === 21) {
+                store.dispatch(changeAdminListAC(data))
+            }
         }
         // ws关闭回调
         this.ws.onclose = e => {

@@ -6,15 +6,21 @@ import {
 } from "@reduxjs/toolkit";
 import {
   userInfoSlice,
-  groupListSlice,
+  withAdminGroupListSlice,
+  withoutAdminGroupListSlice,
+  withoutAdminUserListSlice,
   memberListSlice,
+  adminListSlice,
   chatListSlice,
 } from "./reducers";
 
 const rootReducer = combineReducers({
   userInfo: userInfoSlice.reducer,
-  groupList: groupListSlice.reducer,
+  withAdminGroupList: withAdminGroupListSlice.reducer,
+  withoutAdminGroupList: withoutAdminGroupListSlice.reducer,
+  withoutAdminUserList: withoutAdminUserListSlice.reducer,
   memberList: memberListSlice.reducer,
+  adminList: adminListSlice.reducer,
   chatList: chatListSlice.reducer,
 });
 

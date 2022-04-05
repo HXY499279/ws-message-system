@@ -1,0 +1,31 @@
+.switch-wraper {
+  display: flex;
+  justify-content: center;
+  width: 800px;
+  margin: 0 auto 10px;
+}
+
+.switch {
+  min-width: 180px;
+  margin: 0 auto 10px;
+}
+
+.my-create-group,
+.other-create-group {
+  margin: 0 10px;
+  font-weight: 560;
+  cursor: pointer;
+}
+.my-create-group-mark,
+.other-create-group-mark {
+  margin: 0 10px;
+  font-weight: 560;
+  cursor: pointer;
+  color: rgb(24, 144, 255);
+  border-bottom: 2px solid transparent;
+}
+
+.my-create-group-mark,
+.other-create-group-mark {
+  border-bottom: 2px solid rgb(24, 144, 255);
+}

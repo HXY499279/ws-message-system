@@ -23,19 +23,6 @@ export default function PersonalCenter() {
   // 用户名，密码
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
-
-  useEffect(() => {
-    if (user) {
-      setUserName(user.userName);
-      setPassword(user.password);
-      setLoading(false);
-    }
-    if (group) {
-      dispatch(getMemberListAC(group.groupId));
-    }else{
-    }
-  }, [user, group]);
-
   // 改变编辑状态为可编辑
   const setIsEditUserNameTrue = () => {
     setIsEditUserName(true);
@@ -64,13 +51,26 @@ export default function PersonalCenter() {
     setPassword(value);
   };
 
+  useEffect(() => {
+    if (user) {
+      setUserName(user.userName);
+      setPassword(user.password);
+      setLoading(false);
+    }
+    if (group) {
+      dispatch(getMemberListAC(group.groupId));
+    }else{
+    }
+  }, [user, group]);
+
+
   // 保存信息
   const saveUserName = () => {
     if (!userName) {
       return message.warn("用户名不能为空");
     }
     httpUtil
-      .updateNameAndPassword({ userId: user.userId, password, userName })
+      .updateUserNameAndPassword({ userId: user.userId, password, userName })
       .then(
         (res) => {
           dispatch(getUserInfoAC());
@@ -87,7 +87,7 @@ export default function PersonalCenter() {
       return message.warn("密码不能为空");
     }
     httpUtil
-      .updateNameAndPassword({ userId: user.userId, password, userName })
+      .updateUserNameAndPassword({ userId: user.userId, password, userName })
       .then(
         (res) => {
           dispatch(getUserInfoAC());

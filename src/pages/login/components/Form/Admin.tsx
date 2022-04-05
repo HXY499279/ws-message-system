@@ -21,7 +21,7 @@ export const Admin: React.FC = () => {
   const onFinish = (values: userLogin) => {
     setLoading(true);
     httpUtil.adminLogin(values).then(
-      (res) => {
+      (res) => {        
         setLoading(false);
         message.success(`尊敬的管理员${values.loginName}，欢迎您`);
         // 获取个人信息

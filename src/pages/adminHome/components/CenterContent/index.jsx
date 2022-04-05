@@ -1,34 +1,34 @@
-import React from "react";
 import { Route, Switch, Redirect } from "react-router-dom";
 import PublicGroup from './PublicGroup';
 import PrivateGroup from './PrivateGroup';
-import MyGroup from './MyGroup';
+import AdminList from './AdminList';
+import MyUser from './MyUser'
+import RecycleBin from './RecycleBin'
 import { Layout } from "antd";
-import PersonalCenter from './PersonalCenter';
 import { nanoid } from "nanoid";
 
 const { Content } = Layout;
 
 const Routes = [
   {
-    path: "/admin/publicGroup",
+    path: "/admin/groupManage/publicGroup",
     component: PublicGroup
   },
   {
-    path: "/admin/privateGroup",
+    path: "/admin/groupManage/privateGroup",
     component: PrivateGroup
   },
   {
-    path: "/admin/userManage",
-    component: MyGroup
+    path: "/admin/userManage/myUser",
+    component: MyUser
   },
   {
-    path: "/admin/groupList",
-    component: MyGroup
+    path: "/admin/userManage/recycleBin",
+    component: RecycleBin
   },
   {
-    path: "/admin/personalcenter",
-    component: PersonalCenter
+    path: "/admin/adminList",
+    component: AdminList
   }
 ]
 
@@ -47,7 +47,7 @@ export function CenterContent() {
         {Routes.map((item) => (
           <Route path={item.path} component={item.component} key={nanoid} />
         ))}
-        <Redirect path="/admin" to="/admin/groupManage" key={nanoid} />
+        <Redirect path="/admin" to="/admin/groupManage/publicGroup" key={nanoid} />
       </Switch>
     </Content>
   )

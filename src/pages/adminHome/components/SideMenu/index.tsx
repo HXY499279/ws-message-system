@@ -1,11 +1,14 @@
 import React from "react";
 import { Menu, message, Modal } from "antd";
 import {
-  UserOutlined,
+  UsergroupDeleteOutlined,
   SolutionOutlined,
   LogoutOutlined,
   HomeOutlined,
   ExclamationCircleOutlined,
+  DeleteOutlined,
+  TeamOutlined,
+  UserDeleteOutlined,
 } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import httpUtil from "../../../../utils/httpUtil";
@@ -46,29 +49,36 @@ export function SideMenu() {
       }}
       mode="inline"
       defaultOpenKeys={["1"]}
-      defaultSelectedKeys={["sub1"]}
+      defaultSelectedKeys={["1-sub1"]}
     >
       <Menu.SubMenu
         className={styles["sub-menu"]}
         key="1"
-        icon={<HomeOutlined />}
+        icon={<TeamOutlined />}
         title="分组管理"
       >
-        <Menu.Item key="sub1" icon={<HomeOutlined />}>
-          <Link to="/admin/publicGroup">公共分组</Link>
+        <Menu.Item key="1-sub1" icon={<TeamOutlined />}>
+          <Link to="/admin/groupManage/publicGroup">公共分组</Link>
         </Menu.Item>
-        <Menu.Item key="sub2" icon={<HomeOutlined />}>
-          <Link to="/admin/privateGroup">私有分组</Link>
+        <Menu.Item key="1-sub2" icon={<TeamOutlined />}>
+          <Link to="/admin/groupManage/privateGroup">私有分组</Link>
         </Menu.Item>
       </Menu.SubMenu>
-      <Menu.Item key="2" icon={<SolutionOutlined />}>
-        <Link to="/admin/userManage">用户管理</Link>
-      </Menu.Item>
-      <Menu.Item key="3" icon={<UserOutlined />}>
+      <Menu.SubMenu
+        className={styles["sub-menu"]}
+        key="2"
+        icon={<SolutionOutlined />}
+        title="成员管理"
+      >
+        <Menu.Item key="2-sub1" icon={<TeamOutlined />}>
+          <Link to="/admin/userManage/myUser">我的成员</Link>
+        </Menu.Item>
+        <Menu.Item key="2-sub2" icon={<DeleteOutlined />}>
+          <Link to="/admin/userManage/recycleBin">回收站</Link>
+        </Menu.Item>
+      </Menu.SubMenu>
+      <Menu.Item key="3" icon={<UsergroupDeleteOutlined />}>
         <Link to="/admin/adminList">管理员列表</Link>
-      </Menu.Item>
-      <Menu.Item key="4" icon={<UserOutlined />}>
-        <Link to="/admin/personalcenter">个人信息</Link>
       </Menu.Item>
       <Menu.Item key="5" icon={<LogoutOutlined />} onClick={showConfirm}>
         登出

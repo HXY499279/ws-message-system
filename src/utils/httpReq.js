@@ -19,7 +19,7 @@ export const httpReq = (method, url, data, resType) => {
       method: method,
       url: url,
       data: data,
-      responseType: resType
+      responseType: resType,
     }).then(
       (data) => {
         resolve(data)
@@ -28,7 +28,7 @@ export const httpReq = (method, url, data, resType) => {
         // 错误在这统一处理
         const status = err.response.status
         const errInfo = err.response.data.message || status
-        // 将错误信息传递下去
+        // 将错误信息传递下去，用于结束请求loading
         reject({ status, errInfo })
         // 根据状态码做提示处理
         switch (status) {
@@ -39,7 +39,7 @@ export const httpReq = (method, url, data, resType) => {
             message.error(`未授权: ${errInfo}`)
             setTimeout(() => {
               window.location.href = '/'
-            }, 500)
+            }, 1500)
             break
           case 404:
             message.error(`未找到资源: ${errInfo}`)

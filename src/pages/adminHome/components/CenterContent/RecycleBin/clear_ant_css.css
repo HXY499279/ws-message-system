@@ -1,0 +1,32 @@
+/* 搜索 */
+.ant-input-search {
+  width: 200px !important;
+  position: relative;
+  box-shadow: 0 8px 12px rgb(0 33 79 / 11%) !important;
+  border-radius: 10px !important;
+}
+.ant-input-search input {
+  border-radius: 10px !important;
+  border: none;
+}
+.ant-input-search .ant-input-group-addon {
+  position: absolute;
+}
+.ant-input-search .ant-input-group-addon > button {
+  position: absolute;
+  height: 30px;
+  left: 220px;
+  border-radius: 10px !important;
+  box-shadow: 0 8px 12px rgb(0 33 79 / 11%) !important;
+  border: none;
+}
+/* 创建分组按钮 */
+.create-group-btn {
+  border: none !important;
+  border-radius: 10px !important;
+  box-shadow: 0 8px 12px rgb(0 33 79 / 11%) !important;
+}
+/* table */
+.ant-table {
+  box-shadow: 0 8px 12px rgb(0 33 79 / 11%) !important;
+}

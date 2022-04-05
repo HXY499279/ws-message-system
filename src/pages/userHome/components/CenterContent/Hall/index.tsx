@@ -1,5 +1,15 @@
 import { useEffect, useState } from "react";
-import { Layout, Input, Table, Modal, Button, message, Popconfirm } from "antd";
+import {
+  Form,
+  Select,
+  Input,
+  Table,
+  Modal,
+  Button,
+  message,
+  Popconfirm,
+  Space,
+} from "antd";
 import {
   PlusOutlined,
   CrownTwoTone,
@@ -9,21 +19,24 @@ import GroupCreateForm from "./components/GroupCreateForm";
 import httpUtil from "../../../../../utils/httpUtil";
 import { joinGroup } from "../../../../../utils/params";
 import {
-  getGroupListAC,
+  getWithAdminGroupListAC,
   getUserInfoAC,
+  getAdminListAC,
 } from "../../../../../redux/actionCreators";
 import { useSelector, useDispatch } from "../../../../../redux/hooks";
 import SocketConnect from "../../../../../utils/websocket";
 import "./clear_ant_css.css";
 import { useHistory } from "react-router-dom";
 import {
-  NOGROUP,
-  GROUPHALLLIST,
-  PRIVATEGROUPMESSAGE,
+  NO_GROUP,
+  GROUP_HALL_LIST,
+  PRIVATE_GROUP_MESSAGE,
 } from "../../../../../utils/constant";
+import { nanoid } from "nanoid";
 
 const { Search } = Input;
 const { confirm } = Modal;
+const { Option } = Select;
 
 // 表单获取的数据类型
 export interface GroupCreateFormType {
@@ -32,24 +45,28 @@ export interface GroupCreateFormType {
 }
 
 export default function Hall() {
+  // 获取history
+  const history = useHistory();
+  // 获取dispatch
+  const dispatch = useDispatch();
+
   // 列表加载
-  const loading = useSelector((state) => state.groupList.loading);
+  const loading = useSelector((state) => state.withAdminGroupList.loading);
   // 数据列表（总）
-  const data = useSelector((state) => state.groupList.data);
+  const data = useSelector((state) => state.withAdminGroupList.data);
   // 搜索列表（搜索结果）
   const [searchList, setSearchList] = useState<any>(null);
-  // 是否创建分组弹出框
+  // 是否显示创建分组弹出框
   const [isModalVisible, setIsModalVisible] = useState(false);
+  // 是否显示选择管理员弹出框
+  const [isChoiceAdminVisible, setIsChoiceAdminVisible] = useState(false);
+  // 管理员列表
+  const adminList = useSelector((state) => state.adminList.data);
+
   // 获取user,group,admin
   const user = useSelector((state) => state.userInfo.user);
   const group = useSelector((state) => state.userInfo.group);
   const admin = useSelector((state) => state.userInfo.admin);
-
-  // 获取history
-  const history = useHistory();
-
-  // 获取dispatch
-  const dispatch = useDispatch();
 
   // 已有分组切换到其他分组
   const switchGroup = (item: any) => {
@@ -180,7 +197,7 @@ export default function Hall() {
   };
 
   const getGroupList = () => {
-    admin && dispatch(getGroupListAC(admin.adminId));
+    admin && dispatch(getWithAdminGroupListAC(admin.adminId));
   };
 
   // 提交create group表单
@@ -200,7 +217,7 @@ export default function Hall() {
     }
     const creatorId: number = user.userId;
     const adminId: number = admin.adminId;
-    const data = { ...values, creatorId, adminId };
+    const data = { ...values, creatorId, adminId, adminCreated: false };
     httpUtil.createGroup(data).then((res) => {
       const { status, message: msg } = res;
       if (status === 1) {
@@ -214,20 +231,35 @@ export default function Hall() {
     });
   };
 
+  const confirmChoiceAdmin = (values: any) => {
+    httpUtil.choiceAdmin(values).then((res) => {
+      const { message: msg } = res;
+      message.success(msg);
+      dispatch(getUserInfoAC());
+      setIsChoiceAdminVisible(false);
+    });
+  };
+
   useEffect(() => {
+    // 如果没有管理员，就选择管理员
+    if (admin === null) {
+      dispatch(getAdminListAC());
+      setIsChoiceAdminVisible(true);
+    }
+
     // 获取分组列表
     getGroupList();
     // 连接websocket
     if (admin) {
       httpUtil.connectSocket({
-        groupName: NOGROUP,
-        scene: GROUPHALLLIST,
+        groupName: NO_GROUP,
+        scene: GROUP_HALL_LIST,
       });
     }
-    if (group) {
+    if (group && admin) {
       httpUtil.connectSocket({
         groupName: group.groupName,
-        scene: PRIVATEGROUPMESSAGE,
+        scene: PRIVATE_GROUP_MESSAGE,
       });
     }
   }, [admin]);
@@ -260,6 +292,35 @@ export default function Hall() {
         footer={null}
       >
         <GroupCreateForm onFinish={onFinish} />
+      </Modal>
+      <Modal
+        title="选择管理员"
+        visible={isChoiceAdminVisible}
+        footer={null}
+        closable={false}
+      >
+        <Form onFinish={confirmChoiceAdmin}>
+          <Form.Item name="adminId">
+            <Select placeholder="请选择你的管理员">
+              {adminList?.map((item: any) => {
+                return (
+                  <Option value={item.adminId} key={nanoid()}>
+                    {item.adminName}
+                  </Option>
+                );
+              })}
+            </Select>
+          </Form.Item>
+          <Form.Item>
+            <Button
+              type="primary"
+              style={{ width: "100%", marginTop: 20 }}
+              htmlType="submit"
+            >
+              确定
+            </Button>
+          </Form.Item>
+        </Form>
       </Modal>
     </>
   );

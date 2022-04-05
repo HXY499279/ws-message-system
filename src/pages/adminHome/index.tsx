@@ -12,7 +12,7 @@ const { Header, Sider } = Layout;
 export function AdminHome() {
   const [collapsed, setCollapsed] = useState(false);
 
-  const user = useSelector((state) => state.userInfo.user);
+  const admin = useSelector((state) => state.userInfo.admin);
 
   const dispatch = useDispatch();
   
@@ -47,7 +47,7 @@ export function AdminHome() {
         <Layout className="site-layout">
           <Header className={`site-layout-background ${styles["header"]}`}>
             <span className={styles["hello-user"]}>
-              你好, {user?.userName || "管理员"}
+              你好, {admin?.adminName || "管理员"}
             </span>
           </Header>
           <CenterContent />

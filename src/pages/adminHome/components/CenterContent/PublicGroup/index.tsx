@@ -1,26 +1,13 @@
 import { useEffect, useState } from "react";
 import { Layout, Input, Table, Modal, Button, message, Popconfirm } from "antd";
-import {
-  PlusOutlined,
-  CrownTwoTone,
-  ExclamationCircleOutlined,
-} from "@ant-design/icons";
+import ClipboardJS from "clipboard";
 import GroupCreateForm from "./components/GroupCreateForm";
 import httpUtil from "../../../../../utils/httpUtil";
-import { joinGroup } from "../../../../../utils/params";
-import {
-  getGroupListAC,
-  getUserInfoAC,
-} from "../../../../../redux/actionCreators";
 import { useSelector, useDispatch } from "../../../../../redux/hooks";
-import SocketConnect from "../../../../../utils/websocket";
+import { PRIVATE_GROUP_MESSAGE } from "../../../../../utils/constant";
+import styles from "./index.module.css";
 import "./clear_ant_css.css";
-import { useHistory } from "react-router-dom";
-import {
-  NOGROUP,
-  GROUPHALLLIST,
-  PRIVATEGROUPMESSAGE,
-} from "../../../../../utils/constant";
+import { adminCreatePublicGroup } from "../../../../../utils/params";
 
 const { Search } = Input;
 const { confirm } = Modal;
@@ -31,75 +18,40 @@ export interface GroupCreateFormType {
   maxCount: number;
 }
 
-export default function Hall() {
+export default function PrivateGroup() {
   // 列表加载
-  const loading = useSelector((state) => state.groupList.loading);
+  const [loading, setLoading] = useState(true);
   // 数据列表（总）
-  const data = useSelector((state) => state.groupList.data);
+  const [groupList, setGroupList] = useState<any[]>([]);
   // 搜索列表（搜索结果）
   const [searchList, setSearchList] = useState<any>(null);
   // 是否创建分组弹出框
   const [isModalVisible, setIsModalVisible] = useState(false);
   // 获取user,group,admin
-  const user = useSelector((state) => state.userInfo.user);
-  const group = useSelector((state) => state.userInfo.group);
   const admin = useSelector((state) => state.userInfo.admin);
 
-  // 获取history
-  const history = useHistory();
+  const [isMyCreateGroup, setIsMyCreateGroup] = useState(true);
 
   // 获取dispatch
   const dispatch = useDispatch();
 
-  // 已有分组切换到其他分组
-  const switchGroup = (item: any) => {
-    if (group.groupId === item.groupId) {
-      message.warn("已在该组内");
-    } else if (user.userId === group.creatorId) {
-      message.warn("创建了分组后, 不能加入其他分组");
-    } else if (group.groupId !== item.groupId) {
-      confirm({
-        title: "已有分组",
-        icon: <ExclamationCircleOutlined />,
-        content: `要加入该组必须先退出${group.groupName}组, 确定退出吗?`,
-        onOk() {
-          return httpUtil.quitGroup({ userId: user.userId }).then((res) => {
-            // 加入新分组前先断开旧分组连接
-            SocketConnect.socketConnects.get(group.groupName).closeMyself();
-            joinGroup(item);
-          });
-        },
-        onCancel() {},
-      });
-    }
+  const clickCopy = () => {
+    message.success("复制成功");
   };
 
-  // 加入分组操作
-  const joinGroup = (item: any) => {
-    const { groupId, groupName } = item;
-    const { userId } = user;
-    const data: joinGroup = { groupId, userId };
-
-    httpUtil.joinGroup(data).then((res) => {
-      const { status, message: msg } = res;
-      if (status === 1) {
-        message.warn(msg);
-      } else if (status === 0) {
-        message.success(msg);
-        dispatch(getUserInfoAC());
-        history.push("/user/mygroup");
-      }
+  const getGroupList = () => {
+    setLoading(true);
+    httpUtil.getMyPublicGroupList({ adminId: admin.adminId }).then((res) => {
+      setGroupList(res.data);
+      setLoading(false);
     });
   };
 
-  // 页面上点击加入分组
-  const handleJoinGroup = (item: any) => {
-    if (group) {
-      switchGroup(item);
-    } else {
-      joinGroup(item);
-    }
-    dispatch(getUserInfoAC());
+  const deleteGroup = (groupId: string) => {
+    httpUtil.dismissPublicGroup({ groupId: `${groupId}` }).then((res) => {
+      getGroupList();
+      message.success(res.message);
+    });
   };
 
   const columns = [
@@ -114,30 +66,46 @@ export default function Hall() {
       key: "maxCount",
     },
     {
-      title: "创建人",
-      dataIndex: "creatorName",
-      key: "creatorName",
+      title: "websocket地址",
+      dataIndex: "groupName",
+      key: "groupName",
+      render: (text: any, record: any) => {
+        const { adminId, groupName } = record;
+        return (
+          <span
+            id={`webscoketPath_${record.groupName}`}
+          >{`ws://47.108.139.22:8888/websocket?groupName=${groupName}&adminId=${adminId}&scene=${PRIVATE_GROUP_MESSAGE}`}</span>
+        );
+      },
     },
     {
-      title: "所属管理员",
-      key: "adminId",
-      dataIndex: "adminId",
-    },
-    {
-      title: "加入分组",
-      key: "action",
-      render: (text: any, record: any) => (
-        <Popconfirm
-          title="确认加入该分组吗?"
-          onConfirm={handleJoinGroup.bind(text, record, text)}
-          okText="确认"
-          cancelText="取消"
-        >
-          <PlusOutlined
-            style={{ fontSize: 20, marginLeft: 17, cursor: "pointer" }}
-          />
-        </Popconfirm>
-      ),
+      title: "操作",
+      dataIndex: "groupName",
+      key: "groupName",
+      width: "300px",
+      render: (text: any, record: any) => {
+        return (
+          <div className="btn-wraper">
+            <Button
+              className="copy-websocket-path"
+              style={{ marginRight: 20 }}
+              type="primary"
+              data-clipboard-target={`#webscoketPath_${record.groupName}`}
+              onClick={clickCopy}
+            >
+              复制地址
+            </Button>
+            <Popconfirm
+              title="确认删除该分组吗?"
+              onConfirm={deleteGroup.bind(record, record.groupId)}
+              okText="确认"
+              cancelText="取消"
+            >
+              <Button danger>删除分组</Button>
+            </Popconfirm>
+          </div>
+        );
+      },
     },
   ];
 
@@ -153,7 +121,7 @@ export default function Hall() {
   const search = (value: string) => {
     setSearchList(null);
     const reg = new RegExp(value, "ig");
-    const result = data?.filter((item: any) => {
+    const result = groupList?.filter((item: any) => {
       return item.groupName.search(reg) !== -1;
     });
     setSearchList(result);
@@ -167,17 +135,8 @@ export default function Hall() {
     }
   };
 
-  const getGroupList = () => {
-    admin && dispatch(getGroupListAC(admin.adminId));
-  };
-
   // 提交create group表单
   const onFinish = (values: GroupCreateFormType) => {
-    if (group) {
-      return message.warn(
-        `您已加入分组${group.groupName}, 若要创建分组, 请先退出分组`
-      );
-    }
     const limitCount = 50;
     const { groupName, maxCount } = values;
     if (isNaN(maxCount * 1) || maxCount * 1 < 0 || maxCount * 1 > limitCount) {
@@ -186,59 +145,95 @@ export default function Hall() {
     if (groupName === "NoGroup") {
       return message.warn("不能以NoGroup为小组名");
     }
-    const creatorId: number = user.userId;
     const adminId: number = admin.adminId;
-    const data = { ...values, creatorId, adminId };
-    httpUtil.createGroup(data).then((res) => {
+    const data: adminCreatePublicGroup = { ...values, adminId };
+    httpUtil.adminCreatePublicGroup(data).then((res) => {
       const { status, message: msg } = res;
       if (status === 1) {
         message.warn(msg);
       } else if (status === 0) {
         message.success(msg);
-        history.push("/user/mygroup");
+        getGroupList();
         // 关闭创建分组弹窗
         handleCancel();
       }
     });
   };
 
-  useEffect(() => {
-    // 获取分组列表
+  const markMyCreateGroup = () => {
+    setIsMyCreateGroup(true);
     getGroupList();
-    // 连接websocket
+  };
+  
+  const markOtherCreateGroup = () => {
+    setLoading(true);
+    setIsMyCreateGroup(false);
+    httpUtil.getOutsidePublicGroupList().then((res) => {
+      const { data } = res;
+      setGroupList(data);
+      setLoading(false);
+    });
+  };
+
+  useEffect(() => {
+    // 获取管理员分组列表
+    new ClipboardJS(".copy-websocket-path");
     if (admin) {
-      httpUtil.connectSocket({
-        groupName: NOGROUP,
-        scene: GROUPHALLLIST,
-      });
-    }
-    if (group) {
-      httpUtil.connectSocket({
-        groupName: group.groupName,
-        scene: PRIVATEGROUPMESSAGE,
-      });
+      getGroupList();
     }
   }, [admin]);
 
   return (
     <>
+      <div className={styles["switch-wraper"]}>
+        <div className={styles["switch"]}>
+          <span
+            className={
+              styles[
+                `${
+                  isMyCreateGroup ? "my-create-group-mark" : "my-create-group"
+                }`
+              ]
+            }
+            onClick={markMyCreateGroup}
+          >
+            我创建的组
+          </span>
+          <span
+            className={
+              styles[
+                `${
+                  isMyCreateGroup
+                    ? "other-create-group"
+                    : "other-create-group-mark"
+                }`
+              ]
+            }
+            onClick={markOtherCreateGroup}
+          >
+            外部创建的组
+          </span>
+        </div>
+      </div>
       <Search placeholder="搜索分组" onSearch={search} onChange={clearSearch} />
-      <Button
-        className="create-group-btn"
-        style={{ float: "right" }}
-        onClick={showModal}
-      >
-        创建分组
-      </Button>
+      {isMyCreateGroup && (
+        <Button
+          className="create-group-btn"
+          style={{ float: "right", marginRight: 20 }}
+          onClick={showModal}
+        >
+          创建分组
+        </Button>
+      )}
       <div style={{ height: 20 }} />
       <Table
         columns={columns}
-        dataSource={searchList ? searchList : data}
+        dataSource={searchList ? searchList : groupList}
         loading={loading}
         pagination={{
           hideOnSinglePage: true,
-          pageSize: 7,
-          total: searchList?.length || data?.length || 0,
+          pageSize: 6,
+          total: searchList?.length || groupList?.length || 0,
         }}
       />
       <Modal

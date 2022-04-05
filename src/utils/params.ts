@@ -14,6 +14,10 @@ export interface connectSocket {
 /* 
   admin-controller
 */
+export interface choiceAdmin {
+  adminId: string;
+}
+
 export interface deleteAdmin {
   adminId: string;
 }
@@ -23,10 +27,27 @@ export interface registerAdmin {
   password: string;
 }
 
+export interface updateAdminNameAndPassword {
+  password: string;
+  adminName: string;
+  adminId: string;
+}
+
 /* 
   group-controller
 */
+export interface adminCreateGroup {
+  adminCreated: Boolean;
+  adminId: string;
+  creatorId: string | null;
+  groupName: string;
+  maxCount: number;
+}
+
+export type choiceManagePrivateGroup = number;
+
 export interface createGroup {
+  adminCreated: Boolean;
   groupName: string;
   creatorId: number; // 创建者的userId
   adminId: number;
@@ -34,6 +55,10 @@ export interface createGroup {
 }
 
 export interface dismissGroup {
+  groupId: string;
+}
+
+export interface giveUpManage {
   groupId: string;
 }
 
@@ -46,7 +71,7 @@ export interface kickUser {
   userId: string;
 }
 
-export interface getGroupList {
+export interface getGroupListWithAdmin {
   adminId: string;
 }
 
@@ -62,6 +87,10 @@ export interface adminCreatePublicGroup {
   adminId: number;
   groupName: string;
   maxCount: number;
+}
+
+export interface dismissPublicGroup {
+  groupId: string;
 }
 
 export interface quitGroup {
@@ -96,19 +125,33 @@ export interface userLogin {
 /* 
   user-controller
 */
-export type completelyDeleteUser = {
+export interface choiceUserToManage {
+  groupId: string;
   userId: string;
-};
+}
 
-export type getUserList = {
+export interface completelyDeleteUser {
+  userId: string;
+}
+
+export interface giveUpManageUser {
+  userId: string;
+  groupId: string;
+}
+
+export interface getUserListWithAdmin {
   adminId: string;
-};
+}
 
-export type logicalDeleteUser = {
+export interface getUserListWithoutAdmin {}
+
+export interface logicalDeleteUser {
   userId: string;
-};
+}
 
-export type recoverUsers = string[];
+export interface recoverUser {
+  userId: string;
+}
 
 export interface registerUser {
   userName: string;
@@ -116,11 +159,8 @@ export interface registerUser {
   adminId: string;
 }
 
-export interface updateNameAndPassword {
+export interface updateUserNameAndPassword {
   password: string;
   userName: string;
   userId: string;
 }
-
-
-

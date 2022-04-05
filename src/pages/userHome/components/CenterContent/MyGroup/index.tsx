@@ -5,7 +5,7 @@ import styles from "./index.module.css";
 import { useSelector, useDispatch } from "../../../../../redux/hooks";
 import { Draw } from "../../../../../utils/whiteboard";
 import httpUtil from "../../../../../utils/httpUtil";
-import { PRIVATEGROUPMESSAGE } from "../../../../../utils/constant";
+import { PRIVATE_GROUP_MESSAGE } from "../../../../../utils/constant";
 import SocketConnect from "../../../../../utils/websocket";
 import {
   getUserInfoAC,
@@ -57,7 +57,8 @@ export default function MyGroup() {
     }
   };
 
-  sendIpt &&
+  useEffect(() => {
+    sendIpt &&
     (sendIpt.handleKeyDown = (e) => {
       // 兼容FF和IE和Opera
       var theEvent = e || window.event;
@@ -66,6 +67,8 @@ export default function MyGroup() {
         sendData();
       }
     });
+  },[sendIpt])
+
 
   useEffect(() => {
     if (group) {
@@ -77,7 +80,7 @@ export default function MyGroup() {
       let moveToSwitch = 1;
       let ws = httpUtil.connectSocket({
         groupName: group.groupName,
-        scene: PRIVATEGROUPMESSAGE,
+        scene: PRIVATE_GROUP_MESSAGE,
         callBack(e: any) {
           if (!e) return;
           const Data: whiteBoardDataType & TalkFrameDataType = JSON.parse(
