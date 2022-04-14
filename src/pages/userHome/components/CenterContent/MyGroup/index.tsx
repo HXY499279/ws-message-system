@@ -5,7 +5,7 @@ import styles from "./index.module.css";
 import { useSelector, useDispatch } from "../../../../../redux/hooks";
 import { Draw } from "../../../../../utils/whiteboard";
 import httpUtil from "../../../../../utils/httpUtil";
-import { PRIVATE_GROUP_MESSAGE } from "../../../../../utils/constant";
+import { GROUP_HALL_LIST, NO_GROUP, PRIVATE_GROUP_MESSAGE } from "../../../../../utils/constant";
 import SocketConnect from "../../../../../utils/websocket";
 import {
   getUserInfoAC,
@@ -31,6 +31,7 @@ export default function MyGroup() {
   const chat = useSelector((state) => state.chatList.data);
   const group = useSelector((state) => state.userInfo.group);
   const user = useSelector((state) => state.userInfo.user);
+  const admin = useSelector((state) => state.userInfo.admin);
 
   const [talkFrameScrollTag, setTalkFrameScrollTag] = useState(1);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -40,7 +41,9 @@ export default function MyGroup() {
 
   const sendData = () => {
     if (sendIpt) {
-      const { ws } = SocketConnect.getConnectInstance(group.groupName);
+      const { ws } = SocketConnect.getConnectInstance(
+        `${group.groupName}-${PRIVATE_GROUP_MESSAGE}`
+      );
 
       const value = sendIpt?.state.value;
       const talkFrameData: TalkFrameDataType = {
@@ -72,7 +75,7 @@ export default function MyGroup() {
   useEffect(() => {
     if (group) {
       if (!canvas) {
-        return;
+        return window.location.reload();
       }
       let draw = new Draw(canvas, user.userId);
       const ctx = canvas.getContext("2d")!;

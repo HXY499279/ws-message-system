@@ -39,6 +39,7 @@ import {
   */
   adminLogin,
   userLogin,
+  updateMyAdmin,
   /* 
      user-controller模块
   */
@@ -155,7 +156,9 @@ class HttpUtil {
     httpReq("post", "/session/userLogin", params);
   // 移除管理员信息
   deleteMyAdmin = () => httpReq("delete", "/session/admin");
-
+  // 更新管理员信息
+  updateMyAdmin = (params: updateMyAdmin) =>
+    httpReq("post", "/session/admin", params);
 
   /* 
       user-controller模块

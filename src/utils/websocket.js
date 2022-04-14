@@ -15,11 +15,15 @@ import {
     addWithoutAdminUserListAC,
     deleteWithoutAdminUserListAC,
     changeWithAdminUserListAC,
-    updateMyAdminAC
+    updateMyAdminAC,
+    setIsChoiceAdminVisibleAC
 } from "../redux/actionCreators";
 import { message as Message } from "antd";
 import { store } from "../redux/store";
+import { createBrowserHistory } from 'history'
 import httpUtil from "./httpUtil";
+
+const history = createBrowserHistory()
 
 export default class SocketConnect {
     // 在SocketConnect类上存储自己的实例
@@ -85,10 +89,14 @@ export default class SocketConnect {
             console.log(`${this.name}-${this.scene}`, type, data, message)
             // 创建分组
             if (type === 1) {
-                // type为1有新分组被创建，更新分组列表
-                store.dispatch(addWithAdminGroupListAC(data))
-                if (data.creatorId === user.userId) {
-                    store.dispatch(updateMyGroupAC(data))
+                if (!user) {
+                    store.dispatch(changeWithAdminUserListAC({ showStatus: 0, userId: data.creatorId, groupName: data.groupName }))
+                } else {
+                    // type为1有新分组被创建，更新分组列表
+                    store.dispatch(addWithAdminGroupListAC(data))
+                    if (data.creatorId === user.userId) {
+                        store.dispatch(updateMyGroupAC(data))
+                    }
                 }
             }
             // 管理员删除自己管理的分组
@@ -137,21 +145,25 @@ export default class SocketConnect {
 
             // 解散分组
             if (type === 6) {
-                // 自己不是房主，并且自己是该祖成员时
-                if (group?.groupId === data.groupId) {
-                    httpUtil.deleteMyGroup()
-                        .then(res => {
-                            // 给房间成员提示房间解散
-                            user.userId !== data.creatorId && Message.error("房间已被解散")
-                            setTimeout(() => {
-                                window.location.replace("/user/hall")
-                                // 更新本地缓存（修改自己的group信息）
-                                store.dispatch(updateMyGroupAC(res.data.group))
-                            }, 100)
-                        })
+                if (!user) {
+                    store.dispatch(changeWithAdminUserListAC({ showStatus: 0, userId: data.creatorId, groupName: "" }))
                 } else {
-                    // 有分组被解散，更新分组列表
-                    store.dispatch(deleteWithAdminGroupListAC(data))
+                    // 自己不是房主，并且自己是该祖成员时
+                    if (group?.groupId === data.groupId) {
+                        httpUtil.deleteMyGroup()
+                            .then(res => {
+                                // 给房间成员提示房间解散
+                                user.userId !== data.creatorId && Message.error("房间已被解散")
+                                setTimeout(() => {
+                                    window.location.replace("/user/hall")
+                                    // 更新本地缓存（修改自己的group信息）
+                                    store.dispatch(updateMyGroupAC(res.data.group))
+                                }, 100)
+                            })
+                    } else {
+                        // 有分组被解散，更新分组列表
+                        store.dispatch(deleteWithAdminGroupListAC(data))
+                    }
                 }
             }
 
@@ -165,7 +177,10 @@ export default class SocketConnect {
                 if (!user) {
                     store.dispatch(getWithoutAdminGroupListAC())
                 } else {
-                    if (data == group.groupId) {
+                    // 在大厅里面去掉被放弃的分组
+                    store.dispatch(deleteWithAdminGroupListAC({ groupId: data }))
+                    // 如果用户自己在被放弃的分组里面，删除用户的管理员信息
+                    if (data == group?.groupId) {
                         httpUtil.deleteMyAdmin()
                             .then(() => {
                                 store.dispatch(getUserInfoAC())
@@ -179,9 +194,11 @@ export default class SocketConnect {
                 if (!user) {
                     store.dispatch(deleteWithoutAdminGroupListAC(data))
                 } else {
-                    if (group?.groupId === data.groupId) {
-                        store.dispatch(updateMyAdminAC(data.admin))
-                    }
+                    // 用户所在分组被纳入管理，更新用户的管理员信息
+                    httpUtil.updateMyAdmin({ ...data.admin })
+                        .then(() => {
+                            store.dispatch(updateMyAdminAC(data.admin))
+                        })
                 }
             }
 
@@ -196,8 +213,14 @@ export default class SocketConnect {
                     } else {
                         store.dispatch(addWithoutAdminUserListAC(data))
                     }
+                } else {
+                    if (user.userId === data.userId) {
+                        httpUtil.deleteMyAdmin()
+                            .then(() => {
+                                store.dispatch(getUserInfoAC())
+                            })
+                    }
                 }
-
             }
 
             // 管理员纳入管理（未有分组的）用户
@@ -210,6 +233,10 @@ export default class SocketConnect {
                     } else {
                         store.dispatch(deleteWithoutAdminUserListAC(data))
                     }
+                } else {
+                    if (user.userId === data.userId) {
+                        store.dispatch(setIsChoiceAdminVisibleAC(false))
+                    }
                 }
 
             }
@@ -218,6 +245,11 @@ export default class SocketConnect {
             if (type === 16) {
                 if (!user) {
                     store.dispatch(addWithoutAdminUserListAC(data))
+                } else {
+                    if (user.userId === data.userId) {
+                        httpUtil.logout()
+                        history.push("/");
+                    }
                 }
             }
 
@@ -261,8 +293,16 @@ export default class SocketConnect {
             // 用户选择管理员
             if (type === 24) {
                 if (!user) {
-                    store.dispatch(addWithAdminUserListAC(data.user))
-                    store.dispatch(addWithAdminGroupListAC({ ...data.group, creatorName: data.user.userName }))
+                    // 组长选择管理员
+                    if (data?.group) {
+                        store.dispatch(addWithAdminUserListAC({ ...data.user, groupName: data.group.groupName }))
+                        store.dispatch(addWithAdminGroupListAC({ ...data.group, creatorName: data.user.userName }))
+                        store.dispatch(deleteWithoutAdminGroupListAC({ ...data.group, creatorName: data.user.userName }))
+                    } else {
+                        // 用户选择管理员
+                        store.dispatch(addWithAdminUserListAC(data))
+                        store.dispatch(deleteWithoutAdminUserListAC(data))
+                    }
                 }
             }
         }

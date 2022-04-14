@@ -1,13 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  Select,
-  Input,
-  Table,
-  Modal,
-  Button,
-  message,
-  Popconfirm,
-} from "antd";
+import { Select, Input, Table, Modal, Button, message, Popconfirm } from "antd";
 import {
   PlusOutlined,
   CrownTwoTone,
@@ -19,6 +11,8 @@ import { joinGroup } from "../../../../../utils/params";
 import {
   getWithAdminGroupListAC,
   getUserInfoAC,
+  setIsChoiceAdminVisibleAC,
+  getAdminListAC,
 } from "../../../../../redux/actionCreators";
 import { useSelector, useDispatch } from "../../../../../redux/hooks";
 import SocketConnect from "../../../../../utils/websocket";
@@ -231,18 +225,10 @@ export default function Hall() {
   useEffect(() => {
     // 获取分组列表
     getGroupList();
-    // 连接websocket
-    if (admin) {
-      httpUtil.connectSocket({
-        groupName: NO_GROUP,
-        scene: GROUP_HALL_LIST,
-      });
-    }
-    if (group && admin) {
-      httpUtil.connectSocket({
-        groupName: group.groupName,
-        scene: PRIVATE_GROUP_MESSAGE,
-      });
+
+    if (!group && !admin) {
+      dispatch(getAdminListAC());
+      dispatch(setIsChoiceAdminVisibleAC(true));
     }
   }, [admin]);
 

@@ -5,4 +5,5 @@ export { withoutAdminUserListSlice } from "./withoutAdminUserList/slice";
 export { withAdminUserListSlice } from "./withAdminUserList/slice";
 export { memberListSlice } from "./memberList/slice";
 export { adminListSlice } from "./adminList/slice";
+export { choiceAdminSlice } from "./choiceAdmin/slice";
 export { chatListSlice } from "./chatList/slice";

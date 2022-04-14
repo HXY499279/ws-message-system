@@ -13,6 +13,7 @@ import {
   memberListSlice,
   adminListSlice,
   chatListSlice,
+  choiceAdminSlice,
 } from "./reducers";
 
 const rootReducer = combineReducers({
@@ -24,6 +25,7 @@ const rootReducer = combineReducers({
   memberList: memberListSlice.reducer,
   adminList: adminListSlice.reducer,
   chatList: chatListSlice.reducer,
+  choiceAdmin: choiceAdminSlice.reducer,
 });
 
 export const store = configureStore({

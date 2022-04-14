@@ -7,7 +7,18 @@ import PersonalCenter from "./PersonalCenter";
 import { nanoid } from "nanoid";
 import { useDispatch, useSelector } from "../../../../redux/hooks";
 import httpUtil from "../../../../utils/httpUtil";
-import { getAdminListAC, getUserInfoAC } from "../../../../redux/actionCreators";
+import {
+  getAdminListAC,
+  getUserInfoAC,
+  setIsChoiceAdminVisibleAC,
+} from "../../../../redux/actionCreators";
+import {
+  GROUP_HALL_LIST,
+  NO_GROUP,
+  PRIVATE_GROUP_MESSAGE,
+  USER_WITHOUT_ADMIN_LIST,
+  USER_WITH_ADMIN_LIST,
+} from "../../../../utils/constant";
 
 const { Content } = Layout;
 const { Option } = Select;
@@ -32,7 +43,10 @@ export function CenterContent() {
   const dispatch = useDispatch();
 
   // 是否显示选择管理员弹出框
-  const [isChoiceAdminVisible, setIsChoiceAdminVisible] = useState(false);
+  const isChoiceAdminVisible = useSelector(
+    (state) => state.choiceAdmin.IsChoiceAdminVisible
+  );
+
   // 管理员列表
   const adminList = useSelector((state) => state.adminList.data);
   // 获取user,group,admin
@@ -45,7 +59,7 @@ export function CenterContent() {
       const { message: msg } = res;
       message.success(msg);
       dispatch(getUserInfoAC());
-      setIsChoiceAdminVisible(false);
+      dispatch(setIsChoiceAdminVisibleAC(false));
     });
   };
 
@@ -54,11 +68,33 @@ export function CenterContent() {
     if (user?.userId === group?.creatorId) {
       if (admin === null) {
         dispatch(getAdminListAC());
-        setIsChoiceAdminVisible(true);
+        dispatch(setIsChoiceAdminVisibleAC(true));
       } else {
         // 管理员那边选择了管理本组后，关闭选择管理员弹窗
-        setIsChoiceAdminVisible(false);
+        dispatch(setIsChoiceAdminVisibleAC(false));
       }
+    }
+    // 连接websocket
+    if (admin) {
+      httpUtil.connectSocket({
+        groupName: NO_GROUP,
+        scene: GROUP_HALL_LIST,
+      });
+      httpUtil.connectSocket({
+        groupName: NO_GROUP,
+        scene: USER_WITHOUT_ADMIN_LIST,
+      });
+      if (group) {
+        httpUtil.connectSocket({
+          groupName: group.groupName,
+          scene: PRIVATE_GROUP_MESSAGE,
+        });
+      }
+    } else {
+      httpUtil.connectSocket({
+        groupName: NO_GROUP,
+        scene: USER_WITH_ADMIN_LIST,
+      });
     }
   }, [admin]);
 
@@ -74,7 +110,7 @@ export function CenterContent() {
     >
       <Switch>
         {Routes.map((item) => (
-          <Route path={item.path} component={item.component} key={nanoid()} />
+          <Route path={item.path} component={item.component} key={item.path} />
         ))}
         <Redirect path="/user" to="/user/hall" key={nanoid()} />
       </Switch>

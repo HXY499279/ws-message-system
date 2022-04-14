@@ -122,6 +122,12 @@ export interface userLogin {
   loginName: string;
 }
 
+export interface updateMyAdmin {
+  adminId: string;
+  adminName: string;
+  password: string;
+}
+
 /* 
   user-controller
 */

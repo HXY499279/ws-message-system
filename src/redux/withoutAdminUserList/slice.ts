@@ -12,8 +12,8 @@ interface UserListAndLoading extends withoutAdminUserList {
 
 const initialState: UserListAndLoading = {
   loading: true,
-  deleteResult: null,
-  nodeleteResult: null,
+  deleteResult: [],
+  nodeleteResult: [],
   message: "",
 };
 

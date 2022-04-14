@@ -35,4 +35,5 @@ export {
   deleteAdminListAC,
   changeAdminListAC,
 } from "./adminList/slice";
+export { setIsChoiceAdminVisibleAC } from "./choiceAdmin/slice";
 export { updateChatListAC } from "./chatList/slice";

@@ -11,7 +11,7 @@ interface GroupListAndLoading extends withoutAdminGroupList {
 
 const initialState: GroupListAndLoading = {
   loading: true,
-  data: null,
+  data: [],
   message: "",
 };
 

@@ -61,9 +61,14 @@ export const withAdminUserListSlice = createSlice({
         : state.nodeleteResult;
       result.forEach((item: any) => {
         if (item.userId === action.payload.userId) {
-          [item.userName, item.password] = [
+          [
+            item.userName = item.userName,
+            item.password = item.password,
+            item.groupName = item.groupName,
+          ] = [
             action.payload.userName,
             action.payload.password,
+            action.payload.groupName,
           ];
         }
       });
