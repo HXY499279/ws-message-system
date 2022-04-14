@@ -11,7 +11,7 @@ interface withAdminGroupListAndLoading extends withAdminGroupList {
 
 const initialState: withAdminGroupListAndLoading = {
   loading: true,
-  data: null,
+  data: [],
   message: "",
 };
 

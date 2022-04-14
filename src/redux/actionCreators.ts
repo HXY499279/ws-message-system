@@ -1,4 +1,8 @@
-export { getUserInfoAC, updateMyGroupAC } from "./userInfo/slice";
+export {
+  getUserInfoAC,
+  updateMyGroupAC,
+  updateMyAdminAC,
+} from "./userInfo/slice";
 export {
   getWithAdminGroupListAC,
   addWithAdminGroupListAC,
@@ -15,6 +19,12 @@ export {
   deleteWithoutAdminUserListAC,
 } from "./withoutAdminUserList/slice";
 export {
+  getWithAdminUserListAC,
+  addWithAdminUserListAC,
+  deleteWithAdminUserListAC,
+  changeWithAdminUserListAC,
+} from "./withAdminUserList/slice";
+export {
   getMemberListAC,
   addMemberListAC,
   deleteMemberListAC,
@@ -23,6 +33,6 @@ export {
   getAdminListAC,
   addAdminListAC,
   deleteAdminListAC,
-  changeAdminListAC
+  changeAdminListAC,
 } from "./adminList/slice";
 export { updateChatListAC } from "./chatList/slice";

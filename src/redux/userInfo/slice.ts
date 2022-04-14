@@ -21,6 +21,8 @@ export const getUserInfoAC = createAsyncThunk(
       data: { user, group, admin },
     } = await httpUtil.getSessionInfo();
     const data = { user, group, admin };
+    console.log(data);
+
     return data;
   }
 );
@@ -31,6 +33,9 @@ export const userInfoSlice = createSlice({
   reducers: {
     updateMyGroup: (state, action) => {
       state.group = action.payload;
+    },
+    updateMyAdmin: (state, action) => {
+      state.admin = action.payload;
     },
   },
   extraReducers: {
@@ -49,4 +54,7 @@ export const userInfoSlice = createSlice({
   },
 });
 
-export const updateMyGroupAC = userInfoSlice.actions.updateMyGroup;
+export const {
+  updateMyGroup: updateMyGroupAC,
+  updateMyAdmin: updateMyAdminAC,
+} = userInfoSlice.actions;

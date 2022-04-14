@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import {
-  Form,
   Select,
   Input,
   Table,
@@ -8,7 +7,6 @@ import {
   Button,
   message,
   Popconfirm,
-  Space,
 } from "antd";
 import {
   PlusOutlined,
@@ -21,7 +19,6 @@ import { joinGroup } from "../../../../../utils/params";
 import {
   getWithAdminGroupListAC,
   getUserInfoAC,
-  getAdminListAC,
 } from "../../../../../redux/actionCreators";
 import { useSelector, useDispatch } from "../../../../../redux/hooks";
 import SocketConnect from "../../../../../utils/websocket";
@@ -32,7 +29,6 @@ import {
   GROUP_HALL_LIST,
   PRIVATE_GROUP_MESSAGE,
 } from "../../../../../utils/constant";
-import { nanoid } from "nanoid";
 
 const { Search } = Input;
 const { confirm } = Modal;
@@ -52,16 +48,13 @@ export default function Hall() {
 
   // 列表加载
   const loading = useSelector((state) => state.withAdminGroupList.loading);
+  const [myLoading, setMyLoading] = useState(true);
   // 数据列表（总）
   const data = useSelector((state) => state.withAdminGroupList.data);
   // 搜索列表（搜索结果）
   const [searchList, setSearchList] = useState<any>(null);
   // 是否显示创建分组弹出框
   const [isModalVisible, setIsModalVisible] = useState(false);
-  // 是否显示选择管理员弹出框
-  const [isChoiceAdminVisible, setIsChoiceAdminVisible] = useState(false);
-  // 管理员列表
-  const adminList = useSelector((state) => state.adminList.data);
 
   // 获取user,group,admin
   const user = useSelector((state) => state.userInfo.user);
@@ -197,7 +190,11 @@ export default function Hall() {
   };
 
   const getGroupList = () => {
-    admin && dispatch(getWithAdminGroupListAC(admin.adminId));
+    if (admin) {
+      dispatch(getWithAdminGroupListAC(admin.adminId));
+    } else {
+      setMyLoading(false);
+    }
   };
 
   // 提交create group表单
@@ -231,22 +228,7 @@ export default function Hall() {
     });
   };
 
-  const confirmChoiceAdmin = (values: any) => {
-    httpUtil.choiceAdmin(values).then((res) => {
-      const { message: msg } = res;
-      message.success(msg);
-      dispatch(getUserInfoAC());
-      setIsChoiceAdminVisible(false);
-    });
-  };
-
   useEffect(() => {
-    // 如果没有管理员，就选择管理员
-    if (admin === null) {
-      dispatch(getAdminListAC());
-      setIsChoiceAdminVisible(true);
-    }
-
     // 获取分组列表
     getGroupList();
     // 连接websocket
@@ -278,7 +260,7 @@ export default function Hall() {
       <Table
         columns={columns}
         dataSource={searchList ? searchList : data}
-        loading={loading}
+        loading={myLoading && loading}
         pagination={{
           hideOnSinglePage: true,
           pageSize: 7,
@@ -292,35 +274,6 @@ export default function Hall() {
         footer={null}
       >
         <GroupCreateForm onFinish={onFinish} />
-      </Modal>
-      <Modal
-        title="选择管理员"
-        visible={isChoiceAdminVisible}
-        footer={null}
-        closable={false}
-      >
-        <Form onFinish={confirmChoiceAdmin}>
-          <Form.Item name="adminId">
-            <Select placeholder="请选择你的管理员">
-              {adminList?.map((item: any) => {
-                return (
-                  <Option value={item.adminId} key={nanoid()}>
-                    {item.adminName}
-                  </Option>
-                );
-              })}
-            </Select>
-          </Form.Item>
-          <Form.Item>
-            <Button
-              type="primary"
-              style={{ width: "100%", marginTop: 20 }}
-              htmlType="submit"
-            >
-              确定
-            </Button>
-          </Form.Item>
-        </Form>
       </Modal>
     </>
   );

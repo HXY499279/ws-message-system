@@ -61,7 +61,7 @@ class HttpUtil {
   connectSocket = (params: connectSocket) =>
     new SocketConnect(
       params.groupName,
-      `groupName=${params.groupName}`,
+      params.groupName,
       params.scene,
       params.callBack
     );
@@ -153,6 +153,9 @@ class HttpUtil {
   // 用户登录（用户）
   userLogin = (params: userLogin) =>
     httpReq("post", "/session/userLogin", params);
+  // 移除管理员信息
+  deleteMyAdmin = () => httpReq("delete", "/session/admin");
+
 
   /* 
       user-controller模块

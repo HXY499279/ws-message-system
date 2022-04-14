@@ -10,8 +10,12 @@ import {
   GROUP_HALL_LIST,
   NO_GROUP,
   PRIVATE_GROUP_WITHOUT_ADMIN_LIST,
+  USER_WITH_ADMIN_LIST,
 } from "../../../../../utils/constant";
-import { getWithoutAdminGroupListAC } from "../../../../../redux/actionCreators";
+import {
+  getWithAdminGroupListAC,
+  getWithoutAdminGroupListAC,
+} from "../../../../../redux/actionCreators";
 
 const { Search } = Input;
 
@@ -23,9 +27,9 @@ export interface GroupCreateFormType {
 
 export default function PublicGroup() {
   // 列表加载
-  const [loading, setLoading] = useState(true);
+  const withAdminGroupListLoading = useSelector((state) => state.withAdminGroupList.loading);
   // 数据列表（总）
-  const [groupList, setGroupList] = useState<any[]>([]);
+  const groupList = useSelector((state) => state.withAdminGroupList.data);
   // 搜索列表（搜索结果）
   const [searchList, setSearchList] = useState<any>(null);
   // 是否创建分组弹出框
@@ -53,21 +57,14 @@ export default function PublicGroup() {
   };
 
   const choiceManage = (groupId: string) => {
-    setLoading(true);
     httpUtil.choiceManagePrivateGroup(+groupId).then((res) => {
       dispatch(getWithoutAdminGroupListAC());
-      setLoading(false);
       message.success(res.message);
     });
   };
 
   const getGroupList = () => {
-    setLoading(true);
-    httpUtil.getGroupListWithAdmin({ adminId: admin.adminId }).then((res) => {
-
-      setGroupList(res.data);
-      setLoading(false);
-    });
+    dispatch(getWithAdminGroupListAC(admin.adminId));
   };
 
   const deleteGroup = (groupId: string) => {
@@ -145,7 +142,9 @@ export default function PublicGroup() {
               okText="确认"
               cancelText="取消"
             >
-              <Button type="primary" danger>删除分组</Button>
+              <Button type="primary" danger>
+                删除分组
+              </Button>
             </Popconfirm>
           </div>
         );
@@ -229,6 +228,10 @@ export default function PublicGroup() {
       });
       httpUtil.connectSocket({
         groupName: NO_GROUP,
+        scene: USER_WITH_ADMIN_LIST,
+      });
+      httpUtil.connectSocket({
+        groupName: NO_GROUP,
         scene: GROUP_HALL_LIST,
       });
       getGroupList();
@@ -287,7 +290,7 @@ export default function PublicGroup() {
             ? groupList
             : withoutAdminGroupList
         }
-        loading={isMyManageGroup ? loading : withoutAdminGroupListLoading}
+        loading={isMyManageGroup ? withAdminGroupListLoading : withoutAdminGroupListLoading}
         pagination={{
           hideOnSinglePage: true,
           pageSize: 6,

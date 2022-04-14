@@ -1,27 +1,27 @@
 import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
 import httpUtil from "../../utils/httpUtil";
 
-interface withoutAdminUserList {
+interface withAdminUserList {
   deleteResult: any;
   nodeleteResult: any;
   message: string;
 }
-interface UserListAndLoading extends withoutAdminUserList {
+interface UserListAndLoading extends withAdminUserList {
   loading: boolean;
 }
 
 const initialState: UserListAndLoading = {
   loading: true,
-  deleteResult: null,
-  nodeleteResult: null,
+  deleteResult: [],
+  nodeleteResult: [],
   message: "",
 };
 
 // 同步的actionCreator会被createSlice自动创建，异步的actionCreator需要手动创建
-export const getWithoutAdminUserListAC = createAsyncThunk(
-  "withoutAdminUserList/getWithoutAdminUserListAC",
-  async () => {
-    const { data, message } = await httpUtil.getUserListWithoutAdmin();
+export const getWithAdminUserListAC = createAsyncThunk(
+  "withAdminUserList/getWithAdminUserListAC",
+  async (adminId: string) => {
+    const { data, message } = await httpUtil.getUserListWithAdmin({ adminId });
     let deleteResult: any[] = [];
     let nodeleteResult: any[] = [];
     for (let item of data) {
@@ -33,18 +33,18 @@ export const getWithoutAdminUserListAC = createAsyncThunk(
   }
 );
 
-export const withoutAdminUserListSlice = createSlice({
-  name: "withoutAdminUserList",
+export const withAdminUserListSlice = createSlice({
+  name: "withAdminUserList",
   initialState,
   reducers: {
-    addWithoutAdminUserList(state, action) {
+    addWithAdminUserList(state, action) {
       if (action.payload.showStatus) {
         state.deleteResult.push(action.payload);
       } else {
         state.nodeleteResult.push(action.payload);
       }
     },
-    deleteWithoutAdminUserList(state, action) {
+    deleteWithAdminUserList(state, action) {
       if (action.payload.showStatus) {
         state.deleteResult = state.deleteResult.filter((member: any) => {
           return member.userId != action.payload.userId;
@@ -55,14 +55,27 @@ export const withoutAdminUserListSlice = createSlice({
         });
       }
     },
+    changeWithAdminUserList(state, action) {
+      const result = action.payload.showStatus
+        ? state.deleteResult
+        : state.nodeleteResult;
+      result.forEach((item: any) => {
+        if (item.userId === action.payload.userId) {
+          [item.userName, item.password] = [
+            action.payload.userName,
+            action.payload.password,
+          ];
+        }
+      });
+    },
   },
   extraReducers: {
-    [getWithoutAdminUserListAC.pending.type]: (state) => {
+    [getWithAdminUserListAC.pending.type]: (state) => {
       state.loading = true;
     },
-    [getWithoutAdminUserListAC.fulfilled.type]: (
+    [getWithAdminUserListAC.fulfilled.type]: (
       state,
-      action: PayloadAction<withoutAdminUserList>
+      action: PayloadAction<withAdminUserList>
     ) => {
       [state.loading, state.deleteResult, state.nodeleteResult, state.message] =
         [
@@ -72,13 +85,14 @@ export const withoutAdminUserListSlice = createSlice({
           action.payload.message,
         ];
     },
-    [getWithoutAdminUserListAC.rejected.type]: (state, action) => {
+    [getWithAdminUserListAC.rejected.type]: (state, action) => {
       state.loading = false;
     },
   },
 });
 
 export const {
-  addWithoutAdminUserList: addWithoutAdminUserListAC,
-  deleteWithoutAdminUserList: deleteWithoutAdminUserListAC,
-} = withoutAdminUserListSlice.actions;
+  addWithAdminUserList: addWithAdminUserListAC,
+  deleteWithAdminUserList: deleteWithAdminUserListAC,
+  changeWithAdminUserList: changeWithAdminUserListAC,
+} = withAdminUserListSlice.actions;

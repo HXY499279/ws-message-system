@@ -8,26 +8,31 @@ import {
   GROUP_HALL_LIST,
   NO_GROUP,
   PRIVATE_GROUP_WITHOUT_ADMIN_LIST,
+  USER_WITHOUT_ADMIN_LIST,
 } from "../../../../../utils/constant";
-import { getWithoutAdminUserListAC } from "../../../../../redux/actionCreators";
+import { getWithAdminUserListAC, getWithoutAdminUserListAC } from "../../../../../redux/actionCreators";
 
 const { Search } = Input;
 
 export default function RecycleBin() {
   // 列表加载
-  const [loading, setLoading] = useState(true);
+  const witAdminDeleteUserListLoading = useSelector(
+    (state) => state.withAdminUserList.loading
+  );
   // 数据列表（总）
-  const [userList, setUserList] = useState<any[]>([]);
+  const withAdminDeleteUserList = useSelector(
+    (state) => state.withAdminUserList.deleteResult
+  );
   // 搜索列表（搜索结果）
   const [searchList, setSearchList] = useState<any>(null);
   // 获取user,group,admin
   const admin = useSelector((state) => state.userInfo.admin);
 
   // 获取未指定管理员的用户
-  const withoutAdminUserList = useSelector(
-    (state) => state.withoutAdminUserList.data
+  const withoutAdminDeleteUserList = useSelector(
+    (state) => state.withoutAdminUserList.deleteResult
   );
-  const withoutAdminUserListLoading = useSelector(
+  const withoutAdminDeleteUserListLoading = useSelector(
     (state) => state.withoutAdminUserList.loading
   );
 
@@ -39,30 +44,20 @@ export default function RecycleBin() {
     httpUtil.recoverUser({ userId }).then((res) => {
       isMyManageGroup
         ? getUserList()
-        : dispatch(getWithoutAdminUserListAC(true));
+        : dispatch(getWithoutAdminUserListAC());
       message.success(res.message);
     });
   };
 
   const getUserList = () => {
-    setLoading(true);
-    httpUtil.getUserListWithAdmin({ adminId: admin.adminId }).then((res) => {
-      let result: any[] = [];
-      for (let item of res.data) {
-        if (item.user.showStatus) result.push({ ...item.user, ...item.group });
-      }
-      console.log(result);
-      
-      setUserList(result);
-      setLoading(false);
-    });
+    dispatch(getWithAdminUserListAC(admin.adminId))
   };
 
   const completelyDeleteGroup = (userId: string) => {
     httpUtil.completelyDeleteUser({ userId }).then((res) => {
       isMyManageGroup
         ? getUserList()
-        : dispatch(getWithoutAdminUserListAC(true));
+        : dispatch(getWithoutAdminUserListAC());
       message.success(res.message);
     });
   };
@@ -137,7 +132,7 @@ export default function RecycleBin() {
   const search = (value: string) => {
     setSearchList(null);
     const reg = new RegExp(value, "ig");
-    const result = (isMyManageGroup ? userList : withoutAdminUserList)?.filter(
+    const result = (isMyManageGroup ? withAdminDeleteUserList : withoutAdminDeleteUserList)?.filter(
       (item: any) => {
         return item.userName.search(reg) !== -1;
       }
@@ -159,11 +154,10 @@ export default function RecycleBin() {
   };
   const markWithoutAdminGroup = () => {
     setIsMyManageGroup(false);
-    dispatch(getWithoutAdminUserListAC(true));
+    dispatch(getWithoutAdminUserListAC());
   };
 
   useEffect(() => {
-    // 获取管理员用户列表
     if (admin) {
       httpUtil.connectSocket({
         groupName: NO_GROUP,
@@ -172,6 +166,10 @@ export default function RecycleBin() {
       httpUtil.connectSocket({
         groupName: NO_GROUP,
         scene: GROUP_HALL_LIST,
+      });
+      httpUtil.connectSocket({
+        groupName: NO_GROUP,
+        scene: USER_WITHOUT_ADMIN_LIST,
       });
       getUserList();
     }
@@ -217,16 +215,16 @@ export default function RecycleBin() {
           searchList
             ? searchList
             : isMyManageGroup
-            ? userList
-            : withoutAdminUserList
+            ? withAdminDeleteUserList
+            : withoutAdminDeleteUserList
         }
-        loading={isMyManageGroup ? loading : withoutAdminUserListLoading}
+        loading={isMyManageGroup ? witAdminDeleteUserListLoading : withoutAdminDeleteUserListLoading}
         pagination={{
           hideOnSinglePage: true,
           pageSize: 6,
           total: isMyManageGroup
-            ? searchList?.length || userList?.length || 0
-            : searchList?.length || withoutAdminUserList?.length || 0,
+            ? searchList?.length || withAdminDeleteUserList?.length || 0
+            : searchList?.length || withoutAdminDeleteUserList?.length || 0,
         }}
       />
     </>

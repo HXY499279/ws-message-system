@@ -11,6 +11,7 @@ import {
 import styles from "./index.module.css";
 import httpUtil from "../../../../../../../utils/httpUtil";
 import { Skeleton, Popconfirm, message } from "antd";
+import { PRIVATE_GROUP_MESSAGE } from "../../../../../../../utils/constant";
 
 type propsType = {
   canvasRef: React.RefObject<HTMLCanvasElement>;
@@ -19,22 +20,28 @@ type propsType = {
 export const Whiteboard = (props: propsType) => {
   const group = useSelector((state) => state.userInfo.group);
   const user = useSelector((state) => state.userInfo.user);
+  const canvasRef = props.canvasRef;
+  const canvas = props.canvasRef.current;
 
   const clearCanvas = () => {
-    const { ws } = SocketConnect.getConnectInstance(group.groupName);
+    const { ws } = SocketConnect.getConnectInstance(
+      `${group.groupName}-${PRIVATE_GROUP_MESSAGE}`
+    );
     ws.send(JSON.stringify({ type: 10, data: null, message: "clear" }));
   };
 
   const drawCanvas = () => {
-    const { ws } = SocketConnect.getConnectInstance(group.groupName);
-    const canvas = props.canvasRef.current;
+    const { ws } = SocketConnect.getConnectInstance(
+      `${group.groupName}-${PRIVATE_GROUP_MESSAGE}`
+    );
     let draw = new Draw(canvas, user.userId);
     draw.init(ws);
   };
 
   const eraseCanvas = () => {
-    const { ws } = SocketConnect.getConnectInstance(group.groupName);
-    const canvas = props.canvasRef.current;
+    const { ws } = SocketConnect.getConnectInstance(
+      `${group.groupName}-${PRIVATE_GROUP_MESSAGE}`
+    );
     let erase = new Erase(canvas, user.userId);
     erase.init(ws);
   };
@@ -84,7 +91,7 @@ export const Whiteboard = (props: propsType) => {
       </div>
       <div className={styles["canvas-wraper"]}>
         <canvas
-          ref={props.canvasRef}
+          ref={canvasRef}
           id="whiteBoardCanvas"
           width="880"
           height="530"

@@ -8,26 +8,35 @@ import {
   GROUP_HALL_LIST,
   NO_GROUP,
   PRIVATE_GROUP_WITHOUT_ADMIN_LIST,
+  USER_WITHOUT_ADMIN_LIST,
+  USER_WITH_ADMIN_LIST,
 } from "../../../../../utils/constant";
-import { getWithoutAdminUserListAC } from "../../../../../redux/actionCreators";
+import {
+  getWithoutAdminUserListAC,
+  getWithAdminUserListAC,
+} from "../../../../../redux/actionCreators";
 
 const { Search } = Input;
 
 export default function MyUser() {
   // 列表加载
-  const [loading, setLoading] = useState(true);
+  const witAdminNoDeleteUserListLoading = useSelector(
+    (state) => state.withAdminUserList.loading
+  );
   // 数据列表（总）
-  const [userList, setUserList] = useState<any[]>([]);
+  const withAdminNoDeleteUserList = useSelector(
+    (state) => state.withAdminUserList.nodeleteResult
+  );
   // 搜索列表（搜索结果）
   const [searchList, setSearchList] = useState<any>(null);
   // 获取user,group,admin
   const admin = useSelector((state) => state.userInfo.admin);
 
   // 获取未指定管理员的用户
-  const withoutAdminUserList = useSelector(
-    (state) => state.withoutAdminUserList.data
+  const withoutAdminNoDeleteUserList = useSelector(
+    (state) => state.withoutAdminUserList.nodeleteResult
   );
-  const withoutAdminUserListLoading = useSelector(
+  const withoutAdminNoDeleteUserListLoading = useSelector(
     (state) => state.withoutAdminUserList.loading
   );
 
@@ -43,33 +52,21 @@ export default function MyUser() {
   };
 
   const choiceManage = (userId: string, groupId: string) => {
-    setLoading(true);
+    // setLoading(true);
     httpUtil.choiceUserToManage({ userId, groupId }).then((res) => {
-      dispatch(getWithoutAdminUserListAC(false));
-      setLoading(false);
+      dispatch(getWithoutAdminUserListAC());
+      // setLoading(false);
       message.success(res.message);
     });
   };
 
   const getUserList = () => {
-    setLoading(true);
-    httpUtil.getUserListWithAdmin({ adminId: admin.adminId }).then((res) => {
-      let result: any[] = [];
-      for (let item of res.data) {
-        if (!item.user.showStatus) result.push({ ...item.user, ...item.group });
-      }
-      console.log(result);
-      
-      setUserList(result);
-      setLoading(false);
-    });
+    dispatch(getWithAdminUserListAC(admin.adminId));
   };
 
   const deleteGroup = (userId: string) => {
     httpUtil.logicalDeleteUser({ userId }).then((res) => {
-      isMyManageGroup
-        ? getUserList()
-        : dispatch(getWithoutAdminUserListAC(false));
+      isMyManageGroup ? getUserList() : dispatch(getWithoutAdminUserListAC());
       message.success(res.message);
     });
   };
@@ -156,11 +153,11 @@ export default function MyUser() {
   const search = (value: string) => {
     setSearchList(null);
     const reg = new RegExp(value, "ig");
-    const result = (isMyManageGroup ? userList : withoutAdminUserList)?.filter(
-      (item: any) => {
-        return item.userName.search(reg) !== -1;
-      }
-    );
+    const result = (
+      isMyManageGroup ? withAdminNoDeleteUserList : withoutAdminNoDeleteUserList
+    )?.filter((item: any) => {
+      return item.userName.search(reg) !== -1;
+    });
     setSearchList(result);
   };
 
@@ -178,11 +175,10 @@ export default function MyUser() {
   };
   const markWithoutAdminGroup = () => {
     setIsMyManageGroup(false);
-    dispatch(getWithoutAdminUserListAC(false));
+    dispatch(getWithoutAdminUserListAC());
   };
 
   useEffect(() => {
-    // 获取管理员用户列表
     if (admin) {
       httpUtil.connectSocket({
         groupName: NO_GROUP,
@@ -191,6 +187,14 @@ export default function MyUser() {
       httpUtil.connectSocket({
         groupName: NO_GROUP,
         scene: GROUP_HALL_LIST,
+      });
+      httpUtil.connectSocket({
+        groupName: NO_GROUP,
+        scene: USER_WITHOUT_ADMIN_LIST,
+      });
+      httpUtil.connectSocket({
+        groupName: NO_GROUP,
+        scene: USER_WITH_ADMIN_LIST,
       });
       getUserList();
     }
@@ -236,16 +240,18 @@ export default function MyUser() {
           searchList
             ? searchList
             : isMyManageGroup
-            ? userList
-            : withoutAdminUserList
+            ? withAdminNoDeleteUserList
+            : withoutAdminNoDeleteUserList
         }
-        loading={isMyManageGroup ? loading : withoutAdminUserListLoading}
+        loading={
+          isMyManageGroup ? witAdminNoDeleteUserListLoading : withoutAdminNoDeleteUserListLoading
+        }
         pagination={{
           hideOnSinglePage: true,
           pageSize: 6,
           total: isMyManageGroup
-            ? searchList?.length || userList?.length || 0
-            : searchList?.length || withoutAdminUserList?.length || 0,
+            ? searchList?.length || withAdminNoDeleteUserList?.length || 0
+            : searchList?.length || withoutAdminNoDeleteUserList?.length || 0,
         }}
       />
     </>

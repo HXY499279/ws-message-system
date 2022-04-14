@@ -9,7 +9,13 @@ import {
     deleteWithoutAdminGroupListAC,
     addAdminListAC,
     deleteAdminListAC,
-    changeAdminListAC
+    changeAdminListAC,
+    getUserInfoAC,
+    addWithAdminUserListAC,
+    addWithoutAdminUserListAC,
+    deleteWithoutAdminUserListAC,
+    changeWithAdminUserListAC,
+    updateMyAdminAC
 } from "../redux/actionCreators";
 import { message as Message } from "antd";
 import { store } from "../redux/store";
@@ -23,10 +29,11 @@ export default class SocketConnect {
         return SocketConnect.socketConnects.get(name)
     }
 
-    constructor(name, urlKey, scene, callBack = () => { }) {
-        const { admin: { adminId } } = store.getState().userInfo
+    constructor(name, groupName, scene, callBack = () => { }) {
+        const { admin } = store.getState().userInfo
+        const adminId = admin?.adminId
         // ws://47.108.139.22:8888/websocket?groupName=Xxx&adminId=X&scene=scene
-        this.url = `ws://47.108.139.22:8888/websocket?${urlKey}&adminId=${adminId}&scene=${scene}`;
+        this.url = `ws://47.108.139.22:8888/websocket?groupName=${groupName}&adminId=${adminId}&scene=${scene}`;
         this.ws = null;  // websocket对象
         this.status = null; // websocket状态
         this.name = name // websocket名字
@@ -39,12 +46,12 @@ export default class SocketConnect {
         if ('WebSocket' in window) {
             if (!this.ws) {
                 // 如果已有groupName相同的实例，就无需创建
-                if (!SocketConnect.socketConnects.has(this.name)) {
+                if (!SocketConnect.socketConnects.has(`${this.name}-${this.scene}`)) {
                     // 没有，创建
                     this.connect();
                 } else {
                     // 有，返回
-                    const that = SocketConnect.socketConnects.get(this.name)
+                    const that = SocketConnect.socketConnects.get(`${this.name}-${this.scene}`)
                     this.ws = that.ws
                     this.status = that.status
                     this.callBack()
@@ -59,12 +66,12 @@ export default class SocketConnect {
 
     connect() {
         this.ws = new WebSocket(this.url);
-        SocketConnect.socketConnects.set(this.name, this)
+        SocketConnect.socketConnects.set(`${this.name}-${this.scene}`, this)
         this.ws.onopen = e => {
             // 连接ws成功回调
             console.log(SocketConnect.socketConnects);
             this.status = 'open';
-            console.log(`${this.name}连接成功`)
+            console.log(`${this.name}-${this.scene}连接成功`)
             // 连接成功执行回调函数
             if (this.callBack) {
                 this.callBack()
@@ -75,7 +82,7 @@ export default class SocketConnect {
             const { type, data, message } = JSON.parse(e.data)
             const { user, group, admin } = store.getState().userInfo
 
-            console.log(this.name, type, data, message)
+            console.log(`${this.name}-${this.scene}`, type, data, message)
             // 创建分组
             if (type === 1) {
                 // type为1有新分组被创建，更新分组列表
@@ -157,15 +164,70 @@ export default class SocketConnect {
             if (type === 12) {
                 if (!user) {
                     store.dispatch(getWithoutAdminGroupListAC())
-                }else{
-                    store.dispatch(getUserInfoAC())
+                } else {
+                    if (data == group.groupId) {
+                        httpUtil.deleteMyAdmin()
+                            .then(() => {
+                                store.dispatch(getUserInfoAC())
+                            })
+                    }
                 }
             }
 
             // 管理员选择未指定管理员的私有分组进行管理
             if (type === 13) {
-                store.dispatch(deleteWithoutAdminGroupListAC(data))
+                if (!user) {
+                    store.dispatch(deleteWithoutAdminGroupListAC(data))
+                } else {
+                    if (group?.groupId === data.groupId) {
+                        store.dispatch(updateMyAdminAC(data.admin))
+                    }
+                }
             }
+
+            // 管理员放弃管理（未有分组的）用户
+            if (type === 14) {
+                if (!user) {
+                    if (data.users) {
+                        for (let user of data.users) {
+                            user.groupName = data.groupName
+                            store.dispatch(addWithoutAdminUserListAC(user))
+                        }
+                    } else {
+                        store.dispatch(addWithoutAdminUserListAC(data))
+                    }
+                }
+
+            }
+
+            // 管理员纳入管理（未有分组的）用户
+            if (type === 15) {
+                if (!user) {
+                    if (data.length) {
+                        for (let user of data) {
+                            store.dispatch(deleteWithoutAdminUserListAC(user))
+                        }
+                    } else {
+                        store.dispatch(deleteWithoutAdminUserListAC(data))
+                    }
+                }
+
+            }
+
+            // 管理员删除未指定管理员的用户
+            if (type === 16) {
+                if (!user) {
+                    store.dispatch(addWithoutAdminUserListAC(data))
+                }
+            }
+
+            // 管理员恢复被删除的未指定管理员的用户
+            if (type === 17) {
+                if (!user) {
+                    store.dispatch(addWithoutAdminUserListAC(data))
+                }
+            }
+
 
             // 新增管理员
             if (type === 19) {
@@ -180,6 +242,28 @@ export default class SocketConnect {
             // 管理员修改密码
             if (type === 21) {
                 store.dispatch(changeAdminListAC(data))
+            }
+
+            // 新用户注册
+            if (type === 22) {
+                if (!user) {
+                    store.dispatch(addWithAdminUserListAC(data))
+                }
+            }
+
+            // 用户修改密码
+            if (type === 23) {
+                if (!user) {
+                    store.dispatch(changeWithAdminUserListAC(data))
+                }
+            }
+
+            // 用户选择管理员
+            if (type === 24) {
+                if (!user) {
+                    store.dispatch(addWithAdminUserListAC(data.user))
+                    store.dispatch(addWithAdminGroupListAC({ ...data.group, creatorName: data.user.userName }))
+                }
             }
         }
         // ws关闭回调
@@ -205,7 +289,7 @@ export default class SocketConnect {
     closeHandle(e = 'err') {
         // 因为webSocket并不稳定，规定只能手动关闭(调closeMyself方法)，否则就重连
         if (this.status !== 'close') {
-            console.log(`${this.name}断开重连`, e)
+            console.log(`${this.name}-${this.scene} 断开重连`)
             this.connect(); // 重连
         } else {
             console.log(`${this.name}手动关闭`)

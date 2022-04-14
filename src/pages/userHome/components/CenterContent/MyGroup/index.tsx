@@ -59,26 +59,25 @@ export default function MyGroup() {
 
   useEffect(() => {
     sendIpt &&
-    (sendIpt.handleKeyDown = (e) => {
-      // 兼容FF和IE和Opera
-      var theEvent = e || window.event;
-      var code = theEvent.keyCode || theEvent.which || theEvent.charCode;
-      if (code === 13) {
-        sendData();
-      }
-    });
-  },[sendIpt])
-
+      (sendIpt.handleKeyDown = (e) => {
+        // 兼容FF和IE和Opera
+        var theEvent = e || window.event;
+        var code = theEvent.keyCode || theEvent.which || theEvent.charCode;
+        if (code === 13) {
+          sendData();
+        }
+      });
+  }, [sendIpt]);
 
   useEffect(() => {
     if (group) {
       if (!canvas) {
-        return window.location.reload();
+        return;
       }
       let draw = new Draw(canvas, user.userId);
       const ctx = canvas.getContext("2d")!;
       let moveToSwitch = 1;
-      let ws = httpUtil.connectSocket({
+      let { ws } = httpUtil.connectSocket({
         groupName: group.groupName,
         scene: PRIVATE_GROUP_MESSAGE,
         callBack(e: any) {
@@ -149,7 +148,7 @@ export default function MyGroup() {
             }
           } catch (error) {}
         },
-      }).ws;
+      });
 
       ws.onopen = () => {
         ws.status = "open";
