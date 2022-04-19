@@ -60,7 +60,7 @@ export const withAdminUserListSlice = createSlice({
         ? state.deleteResult
         : state.nodeleteResult;
       result.forEach((item: any) => {
-        if (item.userId === action.payload.userId) {
+        if (item.userId == action.payload.userId) {
           [
             item.userName = item.userName,
             item.password = item.password,

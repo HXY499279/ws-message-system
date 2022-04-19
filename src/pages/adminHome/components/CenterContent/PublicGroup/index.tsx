@@ -4,10 +4,10 @@ import ClipboardJS from "clipboard";
 import GroupCreateForm from "./components/GroupCreateForm";
 import httpUtil from "../../../../../utils/httpUtil";
 import { useSelector, useDispatch } from "../../../../../redux/hooks";
-import { PRIVATE_GROUP_MESSAGE } from "../../../../../utils/constant";
+import { PUBLIC_GROUP_MESSAGE } from "../../../../../utils/constant";
 import styles from "./index.module.css";
-import "./clear_ant_css.css";
 import { adminCreatePublicGroup } from "../../../../../utils/params";
+import "./clear_ant_css.css";
 
 const { Search } = Input;
 const { confirm } = Modal;
@@ -74,7 +74,7 @@ export default function PrivateGroup() {
         return (
           <span
             id={`webscoketPath_${record.groupName}`}
-          >{`ws://47.108.139.22:8888/websocket?groupName=${groupName}&adminId=${adminId}&scene=${PRIVATE_GROUP_MESSAGE}`}</span>
+          >{`ws://47.108.139.22:8888/websocket?groupName=${groupName}&adminId=${adminId}&scene=${PUBLIC_GROUP_MESSAGE}`}</span>
         );
       },
     },

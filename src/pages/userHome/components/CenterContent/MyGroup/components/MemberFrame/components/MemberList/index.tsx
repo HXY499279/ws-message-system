@@ -35,7 +35,7 @@ export const MemberList = (props: PropsType) => {
       </>
     );
   } else {
-    if(dataSource.length === 0){
+    if(dataSource?.length === 0){
       return <Empty style={{margin:"80px 0 0 "}} image={Empty.PRESENTED_IMAGE_SIMPLE} />
     }
     return (

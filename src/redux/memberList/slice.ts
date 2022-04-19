@@ -12,7 +12,7 @@ interface MemberListAndLoading extends MemberList {
 
 const initialState: MemberListAndLoading = {
   loading: true,
-  members: null,
+  members: [],
   creator: null,
   message: "",
 };
@@ -25,7 +25,9 @@ export const getMemberListAC = createAsyncThunk(
       groupId: groupId,
     });
     const { creator, members } = data;
-    return { creator, members, message };
+    members.unshift(creator);
+    const filterMembers = members.filter((item: any) => item);
+    return { creator, members: filterMembers, message };
   }
 );
 
@@ -56,7 +58,6 @@ export const memberListSlice = createSlice({
         action.payload.creator,
         action.payload.message,
       ];
-      state.members.unshift(state.creator);
     },
     [getMemberListAC.rejected.type]: (state, action) => {
       state.loading = false;

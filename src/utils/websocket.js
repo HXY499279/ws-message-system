@@ -16,14 +16,12 @@ import {
     deleteWithoutAdminUserListAC,
     changeWithAdminUserListAC,
     updateMyAdminAC,
-    setIsChoiceAdminVisibleAC
+    setIsChoiceAdminVisibleAC,
+    changeWithAdminGroupListAC
 } from "../redux/actionCreators";
 import { message as Message } from "antd";
 import { store } from "../redux/store";
-import { createBrowserHistory } from 'history'
 import httpUtil from "./httpUtil";
-
-const history = createBrowserHistory()
 
 export default class SocketConnect {
     // 在SocketConnect类上存储自己的实例
@@ -90,6 +88,7 @@ export default class SocketConnect {
             // 创建分组
             if (type === 1) {
                 if (!user) {
+                    store.dispatch(addWithAdminGroupListAC(data))
                     store.dispatch(changeWithAdminUserListAC({ showStatus: 0, userId: data.creatorId, groupName: data.groupName }))
                 } else {
                     // type为1有新分组被创建，更新分组列表
@@ -102,6 +101,16 @@ export default class SocketConnect {
             // 管理员删除自己管理的分组
             if (type === 2) {
                 if (user) {
+                    if (group.groupId == data.groupId) {
+                        httpUtil.deleteMyGroup()
+                            .then(() => {
+                                store.dispatch(updateMyGroupAC(null));
+                                Message.warn("管理员删除分组")
+                                setTimeout(() => {
+                                    window.location.href = "/user/hall"
+                                }, 500);
+                            })
+                    }
                     store.dispatch(deleteWithAdminGroupListAC(data))
                 } else {
                     store.dispatch(deleteWithoutAdminGroupListAC(data))
@@ -110,19 +119,29 @@ export default class SocketConnect {
             // 加入分组
             if (type === 3) {
                 const { groupId } = data
-                if (data.userId === user.userId) {
-                    store.dispatch(getMemberListAC(groupId))
+                if (user) {
+                    if (data.userId === user.userId) {
+                        store.dispatch(getMemberListAC(groupId))
+                    } else {
+                        store.dispatch(addMemberListAC(data))
+                    }
                 } else {
-                    store.dispatch(addMemberListAC(data))
+                    // 管理员这边更新该用户的分组名
+                    store.dispatch(changeWithAdminUserListAC({ ...data, showStatus: 0 }))
                 }
             }
 
             // 退出分组
             if (type === 4) {
-                store.dispatch(deleteMemberListAC(data))
-                if (user?.userId == data.userId) {
-                    window.location.replace("/user/hall")
-                    store.dispatch(updateMyGroupAC(null));
+                if (user) {
+                    store.dispatch(deleteMemberListAC(data))
+                    if (user.userId == data.userId) {
+                        window.location.href = "/user/hall"
+                        store.dispatch(updateMyGroupAC(null));
+                    }
+                } else {
+                    // 管理员这边清除该用户的分组名
+                    store.dispatch(changeWithAdminUserListAC({ ...data, groupName: "", showStatus: 0 }))
                 }
             }
 
@@ -135,7 +154,7 @@ export default class SocketConnect {
                         .then(res => {
                             Message.error("您被踢出房间")
                             setTimeout(() => {
-                                window.location.replace("/user/hall")
+                                window.location.href = "/user/hall"
                                 // 更新本地缓存（修改自己的group信息）
                                 store.dispatch(updateMyGroupAC(res.data.group))
                             }, 100)
@@ -146,6 +165,7 @@ export default class SocketConnect {
             // 解散分组
             if (type === 6) {
                 if (!user) {
+                    store.dispatch(deleteWithAdminGroupListAC(data))
                     store.dispatch(changeWithAdminUserListAC({ showStatus: 0, userId: data.creatorId, groupName: "" }))
                 } else {
                     // 自己不是房主，并且自己是该祖成员时
@@ -155,7 +175,7 @@ export default class SocketConnect {
                                 // 给房间成员提示房间解散
                                 user.userId !== data.creatorId && Message.error("房间已被解散")
                                 setTimeout(() => {
-                                    window.location.replace("/user/hall")
+                                    window.location.href = "/user/hall"
                                     // 更新本地缓存（修改自己的group信息）
                                     store.dispatch(updateMyGroupAC(res.data.group))
                                 }, 100)
@@ -234,8 +254,12 @@ export default class SocketConnect {
                         store.dispatch(deleteWithoutAdminUserListAC(data))
                     }
                 } else {
-                    if (user.userId === data.userId) {
-                        store.dispatch(setIsChoiceAdminVisibleAC(false))
+                    if (user.userId === data?.user?.userId) {
+                        httpUtil.updateMyAdmin({ ...data.admin })
+                            .then(() => {
+                                store.dispatch(updateMyAdminAC(data.admin))
+                                store.dispatch(setIsChoiceAdminVisibleAC(false))
+                            })
                     }
                 }
 
@@ -248,7 +272,7 @@ export default class SocketConnect {
                 } else {
                     if (user.userId === data.userId) {
                         httpUtil.logout()
-                        history.push("/");
+                        window.location.href = '/'
                     }
                 }
             }
@@ -286,6 +310,9 @@ export default class SocketConnect {
             // 用户修改密码
             if (type === 23) {
                 if (!user) {
+                    // 更改管理员私有分组中创建人姓名
+                    store.dispatch(changeWithAdminGroupListAC(data))
+                    // 更改管理员成员列表中中成员姓名
                     store.dispatch(changeWithAdminUserListAC(data))
                 }
             }
@@ -330,7 +357,7 @@ export default class SocketConnect {
         // 因为webSocket并不稳定，规定只能手动关闭(调closeMyself方法)，否则就重连
         if (this.status !== 'close') {
             console.log(`${this.name}-${this.scene} 断开重连`)
-            this.connect(); // 重连
+            // this.connect(); // 重连
         } else {
             console.log(`${this.name}手动关闭`)
         }

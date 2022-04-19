@@ -20,6 +20,8 @@ export const MemberFrame = () => {
   const creator = useSelector((state) => state.memberList.creator);
   const user = useSelector((state) => state.userInfo.user);
   const group = useSelector((state) => state.userInfo.group);
+  const admin = useSelector((state) => state.userInfo.admin);
+  
 
   // 搜索列表（搜索结果）
   const [searchList, setSearchList] = useState<any>(null);
@@ -104,6 +106,7 @@ export const MemberFrame = () => {
     }
   }, [group]);
 
+  console.log(members);
   return (
     <div className={styles.wrapper}>
       <div className={styles["search-wrapper"]}>

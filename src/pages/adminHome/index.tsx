@@ -5,6 +5,8 @@ import { CenterContent, SideMenu } from "./components/index";
 import styles from "./index.module.css";
 import { getUserInfoAC } from "../../redux/userInfo/slice";
 import { useSelector, useDispatch } from "../../redux/hooks";
+import { useHistory } from "react-router-dom";
+
 import "./clear_ant_css.css";
 
 const { Header, Sider } = Layout;
@@ -13,18 +15,22 @@ export function AdminHome() {
   const [collapsed, setCollapsed] = useState(false);
 
   const admin = useSelector((state) => state.userInfo.admin);
+  const user = useSelector((state) => state.userInfo.user);
 
   const dispatch = useDispatch();
-  
+  const history = useHistory();
+
   const toggle = () => {
     setCollapsed(!collapsed);
   };
-  
+
   useEffect(() => {
     // 获取个人信息
     dispatch(getUserInfoAC());
-  }, []);
-
+    if (user) {
+      history.push("/user");
+    }
+  }, [user]);
 
   return (
     <>

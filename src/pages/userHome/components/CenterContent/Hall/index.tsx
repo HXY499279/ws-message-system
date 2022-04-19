@@ -133,6 +133,11 @@ export default function Hall() {
       title: "创建人",
       dataIndex: "creatorName",
       key: "creatorName",
+      render: (text: string, record: any) => {
+        return record.adminCreated
+          ? record.adminName || <span style={{ color: "silver" }}>无</span>
+          : text || <span style={{ color: "silver" }}>无</span>;
+      },
     },
     {
       title: "所属管理员",

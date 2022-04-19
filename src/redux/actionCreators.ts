@@ -7,6 +7,7 @@ export {
   getWithAdminGroupListAC,
   addWithAdminGroupListAC,
   deleteWithAdminGroupListAC,
+  changeWithAdminGroupListAC
 } from "./withAdminGroupList/slice";
 export {
   getWithoutAdminGroupListAC,

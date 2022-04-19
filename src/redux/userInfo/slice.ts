@@ -21,8 +21,6 @@ export const getUserInfoAC = createAsyncThunk(
       data: { user, group, admin },
     } = await httpUtil.getSessionInfo();
     const data = { user, group, admin };
-    console.log(data);
-
     return data;
   }
 );

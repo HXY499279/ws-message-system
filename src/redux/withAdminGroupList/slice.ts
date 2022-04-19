@@ -36,6 +36,14 @@ export const withAdminGroupListSlice = createSlice({
         return member.groupId != action.payload.groupId;
       });
     },
+    changeWithAdminGroupList(state, action) {
+      for (let item of state.data) {
+        if (item.creatorId == action.payload.userId) {
+          [item.creatorName = item.creatorName] = [action.payload.userName];
+          break;
+        }
+      }
+    },
   },
   extraReducers: {
     [getWithAdminGroupListAC.pending.type]: (state) => {
@@ -60,4 +68,5 @@ export const withAdminGroupListSlice = createSlice({
 export const {
   addWithAdminGroupList: addWithAdminGroupListAC,
   deleteWithAdminGroupList: deleteWithAdminGroupListAC,
+  changeWithAdminGroupList: changeWithAdminGroupListAC,
 } = withAdminGroupListSlice.actions;

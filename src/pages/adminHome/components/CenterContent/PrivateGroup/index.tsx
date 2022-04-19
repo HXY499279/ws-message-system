@@ -27,7 +27,9 @@ export interface GroupCreateFormType {
 
 export default function PublicGroup() {
   // 列表加载
-  const withAdminGroupListLoading = useSelector((state) => state.withAdminGroupList.loading);
+  const withAdminGroupListLoading = useSelector(
+    (state) => state.withAdminGroupList.loading
+  );
   // 数据列表（总）
   const groupList = useSelector((state) => state.withAdminGroupList.data);
   // 搜索列表（搜索结果）
@@ -89,8 +91,10 @@ export default function PublicGroup() {
       title: "创建人",
       dataIndex: "creatorName",
       key: "creatorName",
-      render: (text: string) => {
-        return text || <span style={{ color: "silver" }}>无</span>;
+      render: (text: string, record: any) => {
+        return record.adminCreated
+          ? record.adminName || <span style={{ color: "silver" }}>无</span>
+          : text || <span style={{ color: "silver" }}>无</span>;
       },
     },
     {
@@ -290,7 +294,11 @@ export default function PublicGroup() {
             ? groupList
             : withoutAdminGroupList
         }
-        loading={isMyManageGroup ? withAdminGroupListLoading : withoutAdminGroupListLoading}
+        loading={
+          isMyManageGroup
+            ? withAdminGroupListLoading
+            : withoutAdminGroupListLoading
+        }
         pagination={{
           hideOnSinglePage: true,
           pageSize: 6,

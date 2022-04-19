@@ -1,6 +1,7 @@
 export const GROUP_HALL_LIST = "groupHallList"
 export const NO_GROUP = "NoGroup"
 export const PRIVATE_GROUP_MESSAGE = "privateGroupMessage"
+export const PUBLIC_GROUP_MESSAGE = "publicGroupMessage"
 export const PUBLIC_GROUP_CREATED_BY_ADMIN_LIST = "publicGroupCreatedByAdminList"
 export const PRIVATE_GROUP_WITHOUT_ADMIN_LIST = "privateGroupWithoutAdminList"
 export const ADMIN_LIST = "adminList"
