@@ -357,6 +357,7 @@ export default class SocketConnect {
         // 因为webSocket并不稳定，规定只能手动关闭(调closeMyself方法)，否则就重连
         if (this.status !== 'close') {
             console.log(`${this.name}-${this.scene} 断开重连`)
+            Message.warn(`${this.name}-${this.scene} 异常断开`)
             // this.connect(); // 重连
         } else {
             console.log(`${this.name}手动关闭`)

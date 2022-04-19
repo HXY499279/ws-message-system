@@ -82,7 +82,7 @@ export function CenterContent() {
       });
       httpUtil.connectSocket({
         groupName: NO_GROUP,
-        scene: USER_WITHOUT_ADMIN_LIST,
+        scene: USER_WITH_ADMIN_LIST,
       });
       if (group) {
         httpUtil.connectSocket({
@@ -93,7 +93,7 @@ export function CenterContent() {
     } else {
       httpUtil.connectSocket({
         groupName: NO_GROUP,
-        scene: USER_WITH_ADMIN_LIST,
+        scene: USER_WITHOUT_ADMIN_LIST,
       });
     }
   }, [admin]);
