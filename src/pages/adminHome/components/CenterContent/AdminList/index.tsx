@@ -146,7 +146,7 @@ export default function AdminList() {
             type="primary"
             onClick={showChangeAdminModal.bind(record, record)}
           >
-            修改密码
+            修改
           </Button>
         );
       },

@@ -19,6 +19,7 @@ import {
   USER_WITHOUT_ADMIN_LIST,
   USER_WITH_ADMIN_LIST,
 } from "../../../../utils/constant";
+import SocketConnect from "../../../../utils/websocket";
 
 const { Content } = Layout;
 const { Option } = Select;
@@ -84,6 +85,15 @@ export function CenterContent() {
         groupName: NO_GROUP,
         scene: USER_WITH_ADMIN_LIST,
       });
+      // 如果连接上了USER_WITH_ADMIN_LIST就手动关闭错误连接上的USER_WITHOUT_ADMIN_LIST
+      try {
+        SocketConnect.getConnectInstance(
+          "NoGroup-userWithoutAdminList"
+        )?.closeMyself("NoGroup-userWithoutAdminList");
+      } catch (error) {
+        console.log("关闭失败");
+      }
+      
       if (group) {
         httpUtil.connectSocket({
           groupName: group.groupName,

@@ -36,7 +36,15 @@ export const memberListSlice = createSlice({
   initialState,
   reducers: {
     addMemberList(state, action) {
-      state.members.push(action.payload);
+      console.log(action.payload);
+      const { userId } = action.payload;
+      let hasUser = false;
+      for (let user of state.members) {
+        if (user.userId === userId) {
+          hasUser = true;
+        }
+      }
+      hasUser || state.members.push(action.payload);
     },
     deleteMemberList(state, action) {
       state.members = state.members.filter((member: any) => {

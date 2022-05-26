@@ -27,9 +27,7 @@ export function AdminHome() {
   useEffect(() => {
     // 获取个人信息
     dispatch(getUserInfoAC());
-    if (user) {
-      history.push("/user");
-    }
+
   }, [user]);
 
   return (

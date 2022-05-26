@@ -21,7 +21,6 @@ export const MemberFrame = () => {
   const user = useSelector((state) => state.userInfo.user);
   const group = useSelector((state) => state.userInfo.group);
   const admin = useSelector((state) => state.userInfo.admin);
-  
 
   // 搜索列表（搜索结果）
   const [searchList, setSearchList] = useState<any>(null);
@@ -102,11 +101,12 @@ export const MemberFrame = () => {
 
   useEffect(() => {
     if (group) {
+      console.log(members);
+
       dispatch(getMemberListAC(group.groupId));
     }
   }, [group]);
 
-  console.log(members);
   return (
     <div className={styles.wrapper}>
       <div className={styles["search-wrapper"]}>

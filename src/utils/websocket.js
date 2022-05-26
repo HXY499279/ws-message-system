@@ -147,18 +147,22 @@ export default class SocketConnect {
 
             // 有人被踢出分组
             if (type === 5) {
-                // 从分组列表中删除该成员
-                store.dispatch(deleteMemberListAC({ userId: data }))
-                if (user.userId === data) {
-                    httpUtil.deleteMyGroup()
-                        .then(res => {
-                            Message.error("您被踢出房间")
-                            setTimeout(() => {
-                                window.location.href = "/user/hall"
-                                // 更新本地缓存（修改自己的group信息）
-                                store.dispatch(updateMyGroupAC(res.data.group))
-                            }, 100)
-                        })
+                if (user) {
+                    // 从分组列表中删除该成员
+                    store.dispatch(deleteMemberListAC({ userId: data }))
+                    if (user.userId === data) {
+                        httpUtil.deleteMyGroup()
+                            .then(res => {
+                                Message.error("您被踢出房间")
+                                setTimeout(() => {
+                                    window.location.href = "/user/hall"
+                                    // 更新本地缓存（修改自己的group信息）
+                                    store.dispatch(updateMyGroupAC(res.data.group))
+                                }, 100)
+                            })
+                    }
+                } else {
+                    store.dispatch(changeWithAdminUserListAC({ userId: data, groupName: "", showStatus: 0 }))
                 }
             }
 
@@ -335,7 +339,6 @@ export default class SocketConnect {
         }
         // ws关闭回调
         this.ws.onclose = e => {
-            SocketConnect.socketConnects.delete(this.name)
             this.closeHandle(e); // 判断是否关闭
         }
         // ws出错回调
@@ -349,8 +352,9 @@ export default class SocketConnect {
         this.ws.send(data);
     }
     // 手动关闭WebSocket
-    closeMyself() {
+    closeMyself(name) {
         this.status = 'close';
+        SocketConnect.socketConnects.delete(name)
         this.ws.close();
     }
     closeHandle(e = 'err') {

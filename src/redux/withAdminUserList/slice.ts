@@ -59,6 +59,8 @@ export const withAdminUserListSlice = createSlice({
       const result = action.payload.showStatus
         ? state.deleteResult
         : state.nodeleteResult;
+      console.log(action.payload);
+
       result.forEach((item: any) => {
         if (item.userId == action.payload.userId) {
           [
