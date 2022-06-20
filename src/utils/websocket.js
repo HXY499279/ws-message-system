@@ -101,7 +101,7 @@ export default class SocketConnect {
             // 管理员删除自己管理的分组
             if (type === 2) {
                 if (user) {
-                    if (group.groupId == data.groupId) {
+                    if (group?.groupId == data.groupId) {
                         httpUtil.deleteMyGroup()
                             .then(() => {
                                 store.dispatch(updateMyGroupAC(null));
